@@ -2,6 +2,7 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const bodyParser = require('body-parser');
+const { exec } = require('child_process');
 require('dotenv').config();
 
 const app = express();
@@ -65,6 +66,22 @@ app.post('/admin/submissions', (req, res) => {
   });
 
   res.send(data);
+});
+
+// Webhook handler for GitHub auto-deploy
+app.post('/webhook', (req, res) => {
+  exec('bash ./pull.sh', (error, stdout, stderr) => {
+    if (error) {
+      console.error(`Webhook exec error: ${error.message}`);
+      return res.status(500).send('Webhook error');
+    }
+    if (stderr) {
+      console.error(`Webhook stderr: ${stderr}`);
+      return res.status(500).send('Webhook stderr');
+    }
+    console.log(`Webhook stdout: ${stdout}`);
+    res.status(200).send('Webhook received and deployed.');
+  });
 });
 
 app.listen(PORT, () => {
