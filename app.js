@@ -18,21 +18,22 @@ app.get('/', (req, res) => {
 
 // ✅ GITHUB WEBHOOK AUTO-DEPLOY ROUTE
 app.post('/webhook', (req, res) => {
-  console.log('🔄 Webhook received. Pulling changes...');
+  console.log('✅ Webhook received. Pulling changes...');
+
   exec('sh ./pull.sh', (error, stdout, stderr) => {
     if (error) {
-      console.error(`❌ Error: ${error.message}`);
-      return res.status(500).send('Webhook error');
+      console.error(`❌ Exec error: ${error.message}`);
+      return res.status(500).send('Error pulling changes.');
     }
     if (stderr) {
       console.error(`⚠️ Stderr: ${stderr}`);
     }
-    console.log(`✅ Stdout: ${stdout}`);
-    res.status(200).send('Webhook received and deployment triggered');
+    console.log(`📦 Stdout: ${stdout}`);
+    res.status(200).send('✅ Pull and restart successful!');
   });
 });
 
 // Start server
 app.listen(port, () => {
-  console.log(`🚀 App listening at http://localhost:${port}`);
+  console.log(`🚀 Server running on http://localhost:${port}`);
 });
