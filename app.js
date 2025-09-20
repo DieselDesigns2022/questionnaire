@@ -1,35 +1,38 @@
 const express = require('express');
-const path = require('path');
+const bodyParser = require('body-parser');
 const { exec } = require('child_process');
-
 const app = express();
-const PORT = process.env.PORT || 3000;
+const port = 3000;
 
-// Middleware to parse incoming JSON (for GitHub Webhooks)
-app.use(express.json());
+// Middleware
+app.use(bodyParser.json());
+app.use(express.static('public'));
 
-// Serve static files (HTML, CSS, JS, etc.)
-app.use(express.static(path.join(__dirname, 'public')));
+// View engine
+app.set('view engine', 'ejs');
 
-// Route to serve your main HTML (optional if you're using static index.html)
+// Routes
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.render('index');
 });
 
-// GitHub webhook endpoint
+// ✅ GITHUB WEBHOOK AUTO-DEPLOY ROUTE
 app.post('/webhook', (req, res) => {
-  exec('git pull origin main && pm2 restart questionnaire', (err, stdout, stderr) => {
-    if (err) {
-      console.error(`Webhook Error: ${err}`);
+  console.log('🔄 Webhook received. Pulling changes...');
+  exec('sh ./pull.sh', (error, stdout, stderr) => {
+    if (error) {
+      console.error(`❌ Error: ${error.message}`);
       return res.status(500).send('Webhook error');
     }
-    console.log(`Webhook Output:\n${stdout}`);
-    res.status(200).send('Deployment successful');
+    if (stderr) {
+      console.error(`⚠️ Stderr: ${stderr}`);
+    }
+    console.log(`✅ Stdout: ${stdout}`);
+    res.status(200).send('Webhook received and deployment triggered');
   });
 });
 
-// Start the server
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+// Start server
+app.listen(port, () => {
+  console.log(`🚀 App listening at http://localhost:${port}`);
 });
- 
