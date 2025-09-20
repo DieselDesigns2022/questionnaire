@@ -1,4 +1,4 @@
-/* Diesel Designs Dark Mode Brand Styling */
+/* Diesel Designs - Dark Mode with Brand Colors and System Fonts */
 
 :root {
   --bg: #000000;
@@ -13,7 +13,7 @@ body {
   color: var(--text);
   padding-top: 2rem;
   padding-bottom: 4rem;
-  font-family: "Arial", sans-serif;
+  font-family: 'Montserrat', 'Georgia', 'Verdana', 'Tahoma', sans-serif;
 }
 
 main.container {
@@ -30,7 +30,7 @@ input, textarea, select, button {
 
 input::placeholder,
 textarea::placeholder {
-  color: #999;
+  color: #aaa;
 }
 
 h2, h3, label {
@@ -77,4 +77,3 @@ nav.container-fluid {
   border-bottom: 1px solid #333;
   padding-bottom: 0.5rem;
 }
-
