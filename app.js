@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const { exec } = require('child_process');
+const path = require('path');
 
 const app = express();
 const port = 3000;
@@ -11,26 +12,33 @@ app.use(express.static('public'));
 
 // View engine
 app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
 
-// Routes
+// Root route
 app.get('/', (req, res) => {
   res.render('index');
 });
 
-// ✅ WEBHOOK ROUTE
+// ✅ GITHUB WEBHOOK ROUTE
 app.post('/webhook', (req, res) => {
-  console.log('✅ Webhook received. Pulling changes...');
+  console.log('✅ Webhook received. Pulling latest changes...');
+
   exec('sh ./pull.sh', (error, stdout, stderr) => {
     if (error) {
-      console.error(`❌ exec error: ${error}`);
-      return res.status(500).send('Webhook error: Pull failed.');
+      console.error('❌ Pull failed:', error.message);
+      return res.status(500).send('Pull failed');
     }
-    console.log(`✅ Pull script output:\n${stdout}`);
-    res.status(200).send('✅ Pull completed.');
+
+    if (stderr) {
+      console.error('⚠️ stderr:', stderr);
+    }
+
+    console.log('✅ Pull output:\n', stdout);
+    res.status(200).send('✅ Pull completed successfully.');
   });
 });
 
 // Start server
 app.listen(port, () => {
-  console.log(`🚀 App listening at http://localhost:${port}`);
+  console.log(`🚀 Server listening at http://localhost:${port}`);
 });
