@@ -1,32 +1,34 @@
-const express = require("express");
-const app = express();
-const { exec } = require("child_process");
-const path = require("path");
+const express = require('express');
+const path = require('path');
+const { exec } = require('child_process');
 
-// Serve static files (HTML, JS, CSS)
-app.use(express.static(path.join(__dirname, ".")));
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Middleware to parse incoming JSON (for GitHub Webhooks)
 app.use(express.json());
 
-// Admin panel route
-app.get("/admin", (req, res) => {
-  res.sendFile(path.join(__dirname, "admin.html"));
+// Serve static files (HTML, CSS, JS, etc.)
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Route to serve your main HTML (optional if you're using static index.html)
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // GitHub webhook endpoint
-app.post("/webhook", (req, res) => {
-  console.log("🔁 Webhook received: pulling latest code...");
-  exec("git pull origin main && pm2 restart questionnaire", (err, stdout, stderr) => {
+app.post('/webhook', (req, res) => {
+  exec('git pull origin main && pm2 restart questionnaire', (err, stdout, stderr) => {
     if (err) {
-      console.error(`❌ Error:\n${stderr}`);
-      return res.status(500).send("Webhook pull failed.");
+      console.error(`Webhook Error: ${err}`);
+      return res.status(500).send('Webhook error');
     }
-    console.log(`✅ Pulled and restarted:\n${stdout}`);
-    res.status(200).send("Webhook executed.");
+    console.log(`Webhook Output:\n${stdout}`);
+    res.status(200).send('Deployment successful');
   });
 });
 
 // Start the server
-app.listen(3000, () => {
-  console.log("✅ Questionnaire server running on port 3000");
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
- 
