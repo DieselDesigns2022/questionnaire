@@ -1,1 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Diesel Designs – Project Questionnaire</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css" />
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <nav class="container-fluid">
+      <ul><li><strong>Diesel Designs</strong></li></ul>
+      <ul>
+        <li><a href="#">Home</a></li>
+        <li><a href="/admin">Admin</a></li>
+        <li><a href="#" role="button">Start</a></li>
+      </ul>
+    </nav>
 
+    <main class="container">
+      <div class="grid">
+        <section>
+          <hgroup>
+            <h2>Project Questionnaire</h2>
+            <h3>Tell us what you need for your website</h3>
+          </hgroup>
+          <p>Please fill out the form below to help us understand your project.</p>
+
+          <form id="questionnaireForm">
+            <label>
+              Your Name
+              <input type="text" name="name" required />
+            </label>
+
+            <label>
+              Email
+              <input type="email" name="email" required />
+            </label>
+
+            <label>
+              Business / Organization
+              <input type="text" name="business" />
+            </label>
+
+            <label>
+              Project Goals
+              <textarea name="goals" required></textarea>
+            </label>
+
+            <label>
+              Branding Notes
+              <textarea name="branding"></textarea>
+            </label>
+
+            <label>
+              Content You’ll Provide
+              <textarea name="content"></textarea>
+            </label>
+
+            <label>
+              Deadline or Timeline
+              <input type="text" name="timeline" />
+            </label>
+
+            <label>
+              Budget Range
+              <input type="text" name="budget" />
+            </label>
+
+            <hr />
+
+            <div id="agreement"></div>
+
+            <button type="submit">Submit</button>
+          </form>
+        </section>
+      </div>
+    </main>
+
+    <script src="/script.js"></script>
+  </body>
+</html>
