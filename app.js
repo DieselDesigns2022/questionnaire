@@ -1,44 +1,65 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const { exec } = require('child_process');
+const multer = require('multer');
+const fs = require('fs');
 const path = require('path');
 
 const app = express();
-const port = 3000;
+const PORT = 3000;
+
+// Create data folder if it doesn't exist
+const dataDir = path.join(__dirname, 'data');
+if (!fs.existsSync(dataDir)) {
+  fs.mkdirSync(dataDir);
+}
+
+// Set up multer for file uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadPath = path.join(__dirname, 'data', 'uploads');
+    fs.mkdirSync(uploadPath, { recursive: true });
+    cb(null, uploadPath);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + file.originalname;
+    cb(null, uniqueSuffix);
+  }
+});
+const upload = multer({ storage: storage });
 
 // Middleware
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname))); // Serve HTML/CSS/JS
 
-// View engine
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
+// Form submission handler
+app.post('/submit', upload.any(), (req, res) => {
+  const timestamp = new Date().toISOString().replace(/:/g, '-');
+  const data = {
+    submittedAt: timestamp,
+    fields: req.body,
+    files: req.files?.map(file => ({
+      originalName: file.originalname,
+      storedAs: file.filename,
+      path: file.path
+    }))
+  };
 
-// Root route
-app.get('/', (req, res) => {
-  res.render('index');
-});
-
-// ✅ GITHUB WEBHOOK ROUTE
-app.post('/webhook', (req, res) => {
-  console.log('✅ Webhook received. Pulling latest changes...');
-
-  exec('sh ./pull.sh', (error, stdout, stderr) => {
-    if (error) {
-      console.error('❌ Pull failed:', error.message);
-      return res.status(500).send('Pull failed');
+  const savePath = path.join(__dirname, 'data', `submission-${timestamp}.json`);
+  fs.writeFile(savePath, JSON.stringify(data, null, 2), err => {
+    if (err) {
+      console.error('Failed to save submission:', err);
+      return res.status(500).send('Something went wrong.');
     }
-
-    if (stderr) {
-      console.error('⚠️ stderr:', stderr);
-    }
-
-    console.log('✅ Pull output:\n', stdout);
-    res.status(200).send('✅ Pull completed successfully.');
+    res.send('<h2>Thank you! Your response has been submitted.</h2><p><a href="/index2.html">Go back</a></p>');
   });
 });
 
-// Start server
-app.listen(port, () => {
-  console.log(`🚀 Server listening at http://localhost:${port}`);
+// Health check
+app.get('/', (req, res) => {
+  res.send('🚀 Questionnaire backend is running!');
+});
+
+app.listen(PORT, () => {
+  console.log(`🚀 Server running at http://localhost:${PORT}`);
 });
