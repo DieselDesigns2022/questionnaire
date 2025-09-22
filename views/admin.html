@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Admin – Diesel Designs</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css" />
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <nav class="container-fluid">
+      <ul><li><strong>Diesel Designs</strong></li></ul>
+      <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="#" role="button">Admin</a></li>
+      </ul>
+    </nav>
+
+    <main class="container">
+      <div class="grid">
+        <section>
+          <hgroup>
+            <h2>Admin Panel</h2>
+            <h3>Private access only</h3>
+          </hgroup>
+
+          <label>
+            Admin Password
+            <input type="password" id="adminPassword" placeholder="Enter password" required />
+          </label>
+
+          <hr />
+
+          <h3>Edit Agreement Text</h3>
+          <textarea id="agreementEditor" rows="8" placeholder="Loading current agreement..."></textarea>
+          <button onclick="saveAgreement()">Save Agreement</button>
+
+          <hr />
+
+          <h3>Submissions</h3>
+          <div id="submissions">
+            <p>Submissions will appear here after you log in.</p>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <script>
+      const passwordInput = document.getElementById('adminPassword');
+
+      passwordInput.addEventListener('change', () => {
+        const pw = passwordInput.value;
+
+        // Load agreement text
+        fetch('/api/agreement')
+          .then(res => res.text())
+          .then(text => {
+            document.getElementById('agreementEditor').value = text;
+          });
+
+        // Load submissions
+        fetch('/admin/submissions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: pw })
+        })
+          .then(res => res.json())
+          .then(data => {
+            if (data.error) return alert('Wrong password');
+
+            const container = document.getElementById('submissions');
+            container.innerHTML = '';
+
+            data.forEach(entry => {
+              const div = document.createElement('div');
+              div.style.borderBottom = '1px solid #333';
+              div.style.padding = '0.5rem 0';
+              div.innerHTML = `
+                <strong>${entry.file}</strong><br/>
+                <pre style="white-space: pre-wrap; color: #aaa;">${JSON.stringify(entry.content, null, 2)}</pre>
+              `;
+              container.appendChild(div);
+            });
+          });
+      });
+
+      function saveAgreement() {
+        const pw = passwordInput.value;
+        const text = document.getElementById('agreementEditor').value;
+
+        fetch('/admin/save-agreement', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: pw, text })
+        })
+          .then(res => {
+            if (res.ok) alert('✅ Agreement saved!');
+            else alert('❌ Failed to save. Wrong password?');
+          });
+      }
+    </script>
+  </body>
+</html>

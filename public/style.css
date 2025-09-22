@@ -1,0 +1,79 @@
+/* Diesel Designs - Dark Mode with Brand Colors and System Fonts */
+
+:root {
+  --bg: #000000;
+  --text: #ffffff;
+  --accent1: #8D6CE5;
+  --accent2: #87DFE1;
+  --highlight: #FE8ED3;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  padding-top: 2rem;
+  padding-bottom: 4rem;
+  font-family: 'Montserrat', 'Georgia', 'Verdana', 'Tahoma', sans-serif;
+}
+
+main.container {
+  max-width: 720px;
+  margin: auto;
+}
+
+input, textarea, select, button {
+  background-color: #111;
+  color: var(--text);
+  border: 1px solid var(--accent1);
+  border-radius: 6px;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #aaa;
+}
+
+h2, h3, label {
+  color: var(--accent2);
+}
+
+a, nav a {
+  color: var(--highlight);
+}
+
+button {
+  background-color: var(--accent1);
+  color: #000;
+  font-weight: bold;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+button:hover {
+  background-color: var(--accent2);
+}
+
+form hr {
+  margin: 2rem 0;
+  border-color: var(--highlight);
+}
+
+#agreement {
+  background: #1a1a1a;
+  padding: 1rem;
+  border-left: 4px solid var(--highlight);
+  margin-bottom: 2rem;
+  color: var(--text);
+}
+
+nav ul li strong {
+  color: var(--highlight);
+  font-size: 1.4rem;
+}
+
+nav.container-fluid {
+  border-bottom: 1px solid #333;
+  padding-bottom: 0.5rem;
+}
