@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Questionnaire Form – Diesel Designs</title>
+  <title>Diesel Designs Project Questionnaire</title>
   <link rel="stylesheet" href="style.css" />
   <style>
     body {
@@ -29,6 +29,14 @@
     input[type="file"] {
       padding: 0.25rem;
     }
+    fieldset {
+      border: none;
+      padding: 0;
+    }
+    legend {
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+    }
     .agreement-box {
       height: 200px;
       overflow-y: scroll;
@@ -52,52 +60,109 @@
 </head>
 <body>
   <h1>Diesel Designs</h1>
-  <h2>Web Questionnaire</h2>
+  <h2>Web Project Questionnaire</h2>
 
   <form id="questionnaire-form" action="/submit" method="POST" enctype="multipart/form-data">
-    
-    <!-- TEXT FIELD -->
+
+    <!-- ✏️ Contact Info -->
     <label>
-      What's your name?
-      <input type="text" name="name" required />
+      Full Name
+      <input type="text" name="full_name" required />
     </label>
 
-    <!-- DROPDOWN -->
     <label>
-      Budget range:
-      <select name="budget" required>
-        <option value="">Select one</option>
+      Email Address
+      <input type="email" name="email" required />
+    </label>
+
+    <label>
+      Phone Number
+      <input type="text" name="phone" />
+    </label>
+
+    <!-- 💼 Business Info -->
+    <label>
+      Business Name
+      <input type="text" name="business_name" />
+    </label>
+
+    <label>
+      What do you do / sell?
+      <textarea name="business_description" rows="3"></textarea>
+    </label>
+
+    <!-- 🌐 Website Content -->
+    <label>
+      Do you already have a website?
+      <input type="text" name="current_website" placeholder="e.g. https://yourdomain.com or N/A" />
+    </label>
+
+    <label>
+      What are your goals for this website?
+      <textarea name="website_goals" rows="4"></textarea>
+    </label>
+
+    <label>
+      What pages do you need?
+      <textarea name="page_list" rows="3" placeholder="e.g. Home, About, Services, Contact"></textarea>
+    </label>
+
+    <!-- 🧩 Functionality -->
+    <fieldset>
+      <legend>Features you want:</legend>
+      <label><input type="checkbox" name="features" value="contact-form" /> Contact Form</label><br/>
+      <label><input type="checkbox" name="features" value="booking" /> Booking Calendar</label><br/>
+      <label><input type="checkbox" name="features" value="gallery" /> Image Gallery</label><br/>
+      <label><input type="checkbox" name="features" value="ecommerce" /> Online Store</label><br/>
+      <label><input type="checkbox" name="features" value="blog" /> Blog</label>
+    </fieldset>
+
+    <label>
+      Other features or integrations?
+      <textarea name="custom_features" rows="3"></textarea>
+    </label>
+
+    <!-- 🎨 Branding -->
+    <fieldset>
+      <legend>Do you have the following?</legend>
+      <label><input type="checkbox" name="assets" value="logo" /> Logo</label><br/>
+      <label><input type="checkbox" name="assets" value="brand-colors" /> Brand Colors</label><br/>
+      <label><input type="checkbox" name="assets" value="fonts" /> Fonts</label><br/>
+      <label><input type="checkbox" name="assets" value="images" /> Brand Photography</label>
+    </fieldset>
+
+    <label>
+      Upload any brand materials
+      <input type="file" name="brand_files" multiple />
+    </label>
+
+    <!-- ⏱️ Timeline & Budget -->
+    <label>
+      Ideal launch date
+      <input type="text" name="timeline" placeholder="e.g. October 30, ASAP, Q1 2026" />
+    </label>
+
+    <label>
+      Budget Range
+      <select name="budget">
+        <option value="">Select</option>
         <option value="under-1k">Under $1,000</option>
         <option value="1k-5k">$1,000 – $5,000</option>
         <option value="5k-plus">$5,000+</option>
       </select>
     </label>
 
-    <!-- CHECKBOXES -->
-    <fieldset>
-      <legend>What do you need? (check all that apply)</legend>
-      <label><input type="checkbox" name="needs" value="website" /> Website</label><br/>
-      <label><input type="checkbox" name="needs" value="branding" /> Branding</label><br/>
-      <label><input type="checkbox" name="needs" value="ecommerce" /> E-commerce</label>
-    </fieldset>
-
-    <!-- FILE UPLOAD -->
-    <label>
-      Upload any design inspiration:
-      <input type="file" name="inspiration" accept="image/*" />
-    </label>
-
-    <!-- AGREEMENT -->
+    <!-- ✍️ Agreement -->
     <label>
       Agreement:
       <div class="agreement-box" id="agreement-box">
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. [Insert full agreement text here]</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed in augue vitae libero viverra consectetur. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. [Insert full agreement here]</p>
         <p>End of agreement.</p>
       </div>
       <input type="checkbox" id="agree" name="agree" disabled /> I have read and agree to the terms
     </label>
 
-    <button type="submit" id="submit-btn" disabled>Submit</button>
+    <button type="submit" id="submit-btn" disabled>Submit Questionnaire</button>
   </form>
 
   <script>
