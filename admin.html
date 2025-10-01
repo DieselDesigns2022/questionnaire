@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Admin Panel | Diesel Designs</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css"
+    />
+  </head>
+  <body>
+    <nav class="container-fluid">
+      <ul>
+        <li><strong>Diesel Designs</strong></li>
+      </ul>
+      <ul>
+        <li><a href="index.html">Public Form</a></li>
+        <li><a href="#" role="button" onclick="event.preventDefault()">Logout</a></li>
+      </ul>
+    </nav>
+
+    <main class="container">
+      <div class="grid">
+        <section>
+          <hgroup>
+            <h2>Admin Panel</h2>
+            <h3>Manage your questionnaire settings</h3>
+          </hgroup>
+
+          <form id="login-form">
+            <h3>Login</h3>
+            <input
+              type="password"
+              name="admin_password"
+              placeholder="Enter Admin Password"
+              required
+            />
+            <button type="submit" onclick="event.preventDefault()">Login</button>
+          </form>
+
+          <hr />
+
+          <section id="admin-content" style="display:none;">
+            <h3>Edit Agreement Text</h3>
+            <form id="agreement-form">
+              <textarea
+                name="agreement_text"
+                rows="8"
+                placeholder="Enter agreement text here..."
+                required
+              ></textarea>
+              <button type="submit" onclick="event.preventDefault()">Save Agreement</button>
+            </form>
+
+            <h3>Recent Submissions</h3>
+            <p>This section will display user responses once connected to the backend.</p>
+            <ul>
+              <li><em>submission_2025-10-01.json</em></li>
+              <li><em>submission_2025-09-28.json</em></li>
+              <!-- Placeholder entries -->
+            </ul>
+
+            <h3>Preview Public Form</h3>
+            <a href="index.html" target="_blank" role="button">Open Public Form</a>
+          </section>
+        </section>
+      </div>
+    </main>
+
+    <footer class="container">
+      <small><a href="#">Privacy</a> • <a href="#">Terms</a></small>
+    </footer>
+
+    <script>
+      // TEMP login simulation (client-side only)
+      const loginForm = document.getElementById('login-form');
+      const adminContent = document.getElementById('admin-content');
+
+      loginForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        const pw = loginForm.admin_password.value;
+        if (pw === 'admin123') {
+          loginForm.style.display = 'none';
+          adminContent.style.display = 'block';
+        } else {
+          alert('Incorrect password');
+        }
+      });
+    </script>
+  </body>
+</html>
