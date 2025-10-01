@@ -1,60 +1,59 @@
-// app.js
-
-const express = require('express');
+// === Serve individual submission content ===
 const fs = require('fs');
 const path = require('path');
-const bodyParser = require('body-parser');
+const express = require('express');
 const app = express();
-const PORT = 3000;
+const submissionsDir = path.join(__dirname, 'data/submissions');
 
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname)));
+app.use(express.static('public'));
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
-const submissionsDir = path.join(__dirname, 'data');
-if (!fs.existsSync(submissionsDir)) {
-  fs.mkdirSync(submissionsDir);
-}
+// Serve admin panel
+app.use(express.static(__dirname));
 
-// Handle form submissions
-app.post('/submit', (req, res) => {
-  const data = req.body;
-  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-  const filename = `submission-${timestamp}.json`;
-
-  fs.writeFile(path.join(submissionsDir, filename), JSON.stringify(data, null, 2), (err) => {
-    if (err) {
-      console.error('Failed to save submission:', err);
-      return res.status(500).send('Internal Server Error');
-    }
-    console.log(`✔️ Saved submission: ${filename}`);
-    res.send('<h2>Thanks for submitting! ✅</h2><a href="/">Back to home</a>');
-  });
-});
-
-// Serve list of submissions for admin
+// API to list all submission files
 app.get('/submissions', (req, res) => {
   fs.readdir(submissionsDir, (err, files) => {
     if (err) {
-      return res.status(500).json({ error: 'Failed to read submissions directory' });
+      return res.status(500).json({ error: 'Could not list submissions.' });
     }
-
-    const jsonFiles = files.filter(file => file.endsWith('.json'));
+    const jsonFiles = files.filter(f => f.endsWith('.json'));
     res.json(jsonFiles);
   });
 });
 
-// Serve individual JSON file
+// 🔧 NEW: API to serve individual submission JSON
 app.get('/submissions/:filename', (req, res) => {
-  const filename = req.params.filename;
-  const filePath = path.join(submissionsDir, filename);
-
-  if (!fs.existsSync(filePath)) {
-    return res.status(404).send('File not found');
-  }
-
-  res.sendFile(filePath);
+  const filePath = path.join(submissionsDir, req.params.filename);
+  fs.readFile(filePath, 'utf-8', (err, content) => {
+    if (err) {
+      return res.status(404).json({ error: 'File not found' });
+    }
+    try {
+      const json = JSON.parse(content);
+      res.json(json);
+    } catch (parseErr) {
+      res.status(500).json({ error: 'Invalid JSON format' });
+    }
+  });
 });
 
+// Form submission POST route
+app.post('/submit', (req, res) => {
+  const timestamp = new Date().toISOString().replace(/:/g, '-');
+  const fileName = `submission-${timestamp}.json`;
+  const filePath = path.join(submissionsDir, fileName);
+  fs.writeFile(filePath, JSON.stringify(req.body, null, 2), err => {
+    if (err) {
+      return res.status(500).send('Error saving submission.');
+    }
+    res.redirect('/thankyou.html');
+  });
+});
+
+// Start server
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`🚀 Questionnaire backend running on http://localhost:${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
