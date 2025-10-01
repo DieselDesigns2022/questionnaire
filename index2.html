@@ -3,164 +3,116 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Diesel Designs Project Questionnaire</title>
-  <link rel="stylesheet" href="style.css" />
+  <title>Questionnaire 2.0</title>
   <style>
     body {
-      font-family: sans-serif;
-      background: #fff;
-      color: #222;
-      max-width: 800px;
-      margin: auto;
-      padding: 2rem;
+      font-family: Arial, sans-serif;
+      padding: 40px;
+      background-color: #f9f9f9;
     }
-    h1, h2 {
-      text-align: center;
-    }
+
     form {
-      display: grid;
-      gap: 1.5rem;
+      max-width: 700px;
+      margin: 0 auto;
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
-    input, textarea, select {
-      width: 100%;
-      padding: 0.75rem;
-      font-size: 1rem;
-    }
-    input[type="file"] {
-      padding: 0.25rem;
-    }
-    fieldset {
-      border: none;
-      padding: 0;
-    }
-    legend {
+
+    label {
+      display: block;
+      margin: 20px 0 5px;
       font-weight: bold;
-      margin-bottom: 0.5rem;
     }
-    .agreement-box {
+
+    input[type="text"],
+    textarea,
+    select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    input[type="checkbox"] {
+      margin-right: 10px;
+    }
+
+    #agreement-box {
       height: 200px;
       overflow-y: scroll;
+      background: #f1f1f1;
+      padding: 15px;
       border: 1px solid #ccc;
-      padding: 1rem;
-      background: #f9f9f9;
+      margin-top: 5px;
     }
+
     button {
-      background: #000;
-      color: #fff;
-      padding: 1rem;
-      font-size: 1rem;
+      margin-top: 20px;
+      background-color: #333;
+      color: white;
       border: none;
-      cursor: pointer;
-    }
-    button:disabled {
-      background: #aaa;
+      padding: 12px 24px;
+      border-radius: 4px;
+      font-size: 16px;
       cursor: not-allowed;
+      opacity: 0.5;
+    }
+
+    button.enabled {
+      cursor: pointer;
+      opacity: 1;
     }
   </style>
 </head>
 <body>
-  <h1>Diesel Designs</h1>
-  <h2>Web Project Questionnaire</h2>
+  <form id="questionnaire-form" action="/submit" method="POST">
 
-  <form id="questionnaire-form" action="/submit" method="POST" enctype="multipart/form-data">
+    <label for="name">Your Name:</label>
+    <input type="text" name="name" required />
 
-    <!-- ✏️ Contact Info -->
-    <label>
-      Full Name
-      <input type="text" name="full_name" required />
-    </label>
+    <label for="email">Email Address:</label>
+    <input type="text" name="email" required />
 
-    <label>
-      Email Address
-      <input type="email" name="email" required />
-    </label>
+    <label for="business">Business Name:</label>
+    <input type="text" name="business" required />
 
-    <label>
-      Phone Number
-      <input type="text" name="phone" />
-    </label>
+    <label for="services">What services do you need?</label>
+    <select name="services">
+      <option value="">-- Select one --</option>
+      <option value="web-design">Web Design</option>
+      <option value="branding">Branding</option>
+      <option value="print">Print / Packaging</option>
+      <option value="photo">Photography / Video</option>
+    </select>
 
-    <!-- 💼 Business Info -->
-    <label>
-      Business Name
-      <input type="text" name="business_name" />
-    </label>
+    <label for="budget">Estimated Budget:</label>
+    <input type="text" name="budget" />
 
-    <label>
-      What do you do / sell?
-      <textarea name="business_description" rows="3"></textarea>
-    </label>
+    <label for="goals">What are your goals for this project?</label>
+    <textarea name="goals" rows="4"></textarea>
 
-    <!-- 🌐 Website Content -->
-    <label>
-      Do you already have a website?
-      <input type="text" name="current_website" placeholder="e.g. https://yourdomain.com or N/A" />
-    </label>
+    <label for="inspo">Do you have examples of work you like?</label>
+    <textarea name="inspo" rows="3"></textarea>
 
-    <label>
-      What are your goals for this website?
-      <textarea name="website_goals" rows="4"></textarea>
-    </label>
+    <label for="extra">Anything else we should know?</label>
+    <textarea name="extra" rows="3"></textarea>
 
-    <label>
-      What pages do you need?
-      <textarea name="page_list" rows="3" placeholder="e.g. Home, About, Services, Contact"></textarea>
-    </label>
+    <!-- AGREEMENT SECTION -->
+    <label for="agreement">Agreement:</label>
+    <div id="agreement-box">
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur ac venenatis elit. Morbi at suscipit sem. Proin sodales nulla a dolor imperdiet, in gravida nulla finibus. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae.</p>
+      <p>Nam quis metus eget nulla vehicula cursus non at nulla. Nulla facilisi. Proin suscipit euismod erat in eleifend. Donec bibendum sem turpis, a scelerisque nulla tincidunt id. Sed nec velit sit amet est lobortis fringilla.</p>
+      <p>Scroll to the bottom to agree...</p>
+      <p style="margin-top: 400px;"><strong>✅ End of agreement.</strong></p>
+    </div>
 
-    <!-- 🧩 Functionality -->
-    <fieldset>
-      <legend>Features you want:</legend>
-      <label><input type="checkbox" name="features" value="contact-form" /> Contact Form</label><br/>
-      <label><input type="checkbox" name="features" value="booking" /> Booking Calendar</label><br/>
-      <label><input type="checkbox" name="features" value="gallery" /> Image Gallery</label><br/>
-      <label><input type="checkbox" name="features" value="ecommerce" /> Online Store</label><br/>
-      <label><input type="checkbox" name="features" value="blog" /> Blog</label>
-    </fieldset>
-
-    <label>
-      Other features or integrations?
-      <textarea name="custom_features" rows="3"></textarea>
-    </label>
-
-    <!-- 🎨 Branding -->
-    <fieldset>
-      <legend>Do you have the following?</legend>
-      <label><input type="checkbox" name="assets" value="logo" /> Logo</label><br/>
-      <label><input type="checkbox" name="assets" value="brand-colors" /> Brand Colors</label><br/>
-      <label><input type="checkbox" name="assets" value="fonts" /> Fonts</label><br/>
-      <label><input type="checkbox" name="assets" value="images" /> Brand Photography</label>
-    </fieldset>
-
-    <label>
-      Upload any brand materials
-      <input type="file" name="brand_files" multiple />
-    </label>
-
-    <!-- ⏱️ Timeline & Budget -->
-    <label>
-      Ideal launch date
-      <input type="text" name="timeline" placeholder="e.g. October 30, ASAP, Q1 2026" />
-    </label>
-
-    <label>
-      Budget Range
-      <select name="budget">
-        <option value="">Select</option>
-        <option value="under-1k">Under $1,000</option>
-        <option value="1k-5k">$1,000 – $5,000</option>
-        <option value="5k-plus">$5,000+</option>
-      </select>
-    </label>
-
-    <!-- ✍️ Agreement -->
-    <label>
-      Agreement:
-      <div class="agreement-box" id="agreement-box">
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed in augue vitae libero viverra consectetur. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. [Insert full agreement here]</p>
-        <p>End of agreement.</p>
-      </div>
-      <input type="checkbox" id="agree" name="agree" disabled /> I have read and agree to the terms
-    </label>
+    <div style="margin-top: 15px;">
+      <input type="checkbox" id="agree" disabled />
+      <label for="agree">I have read and agree to the terms</label>
+    </div>
 
     <button type="submit" id="submit-btn" disabled>Submit Questionnaire</button>
   </form>
@@ -171,14 +123,20 @@
     const submitBtn = document.getElementById('submit-btn');
 
     agreementBox.addEventListener('scroll', () => {
-      const atBottom = agreementBox.scrollTop + agreementBox.clientHeight >= agreementBox.scrollHeight;
+      const atBottom = agreementBox.scrollTop + agreementBox.clientHeight >= agreementBox.scrollHeight - 5;
       if (atBottom) {
         agreeCheckbox.disabled = false;
       }
     });
 
     agreeCheckbox.addEventListener('change', () => {
-      submitBtn.disabled = !agreeCheckbox.checked;
+      if (agreeCheckbox.checked) {
+        submitBtn.disabled = false;
+        submitBtn.classList.add('enabled');
+      } else {
+        submitBtn.disabled = true;
+        submitBtn.classList.remove('enabled');
+      }
     });
   </script>
 </body>
