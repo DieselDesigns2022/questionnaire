@@ -3,122 +3,29 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Questionnaire 2.0</title>
+  <title>Coming Soon - Questionnaire 2.0</title>
   <style>
     html, body {
       height: 100%;
       margin: 0;
       background-color: #000;
       color: #fff;
-      font-family: Arial, sans-serif;
       display: flex;
       justify-content: center;
       align-items: center;
+      font-family: Arial, sans-serif;
+      flex-direction: column;
     }
-    .container {
-      background: #fff;
-      color: #000;
-      padding: 40px;
-      border-radius: 10px;
-      width: 90%;
-      max-width: 600px;
-    }
-    textarea {
-      width: 100%;
-      height: 200px;
-      overflow-y: scroll;
-      border: 1px solid #ccc;
-      padding: 10px;
-      resize: none;
-      background: #f9f9f9;
-    }
-    input[type="checkbox"] {
-      margin-top: 15px;
-    }
-    button {
+    img {
+      max-width: 90%;
+      height: auto;
       margin-top: 20px;
-      padding: 10px 20px;
-      font-size: 16px;
-      background: gray;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: not-allowed;
-    }
-    button.enabled {
-      background: green;
-      cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2>Agreement:</h2>
-    <textarea id="agreement-box" readonly>
-Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-Sed in augue vitae libero viverra consectetur.
-Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.
-Cras sit amet justo vel leo luctus viverra.
-Fusce sagittis libero non purus gravida, vitae ultricies velit sagittis.
-Praesent nec nisl id velit malesuada congue.
-Aliquam erat volutpat. Donec sit amet semper erat, non dignissim velit.
-Sed lobortis lectus nec metus bibendum, at cursus lorem accumsan.
-Integer sagittis, ex nec cursus sagittis, magna purus cursus ante, vitae dictum erat libero a ex.
-End of agreement.
-      Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-Sed in augue vitae libero viverra consectetur.
-Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.
-Cras sit amet justo vel leo luctus viverra.
-Fusce sagittis libero non purus gravida, vitae ultricies velit sagittis.
-Praesent nec nisl id velit malesuada congue.
-Aliquam erat volutpat. Donec sit amet semper erat, non dignissim velit.
-Sed lobortis lectus nec metus bibendum, at cursus lorem accumsan.
-Integer sagittis, ex nec cursus sagittis, magna purus cursus ante, vitae dictum erat libero a ex.
-End of agreement.
-      Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-Sed in augue vitae libero viverra consectetur.
-Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.
-Cras sit amet justo vel leo luctus viverra.
-Fusce sagittis libero non purus gravida, vitae ultricies velit sagittis.
-Praesent nec nisl id velit malesuada congue.
-Aliquam erat volutpat. Donec sit amet semper erat, non dignissim velit.
-Sed lobortis lectus nec metus bibendum, at cursus lorem accumsan.
-Integer sagittis, ex nec cursus sagittis, magna purus cursus ante, vitae dictum erat libero a ex.
-End of agreement.
-    </textarea>
-
-    <div>
-      <input type="checkbox" id="agree" disabled />
-      <label for="agree">I have read and agree to the terms</label>
-    </div>
-
-    <form id="questionnaire-form" method="POST" action="/submit">
-      <input type="hidden" name="agreed" value="true" />
-      <button type="submit" id="submit-btn" disabled>Submit Questionnaire</button>
-    </form>
-  </div>
-
-  <script>
-    const agreementBox = document.getElementById('agreement-box');
-    const checkbox = document.getElementById('agree');
-    const submitBtn = document.getElementById('submit-btn');
-
-    agreementBox.addEventListener('scroll', () => {
-      const scrolledToBottom = agreementBox.scrollTop + agreementBox.clientHeight >= agreementBox.scrollHeight;
-      if (scrolledToBottom) {
-        checkbox.disabled = false;
-      }
-    });
-
-    checkbox.addEventListener('change', () => {
-      if (checkbox.checked) {
-        submitBtn.disabled = false;
-        submitBtn.classList.add('enabled');
-      } else {
-        submitBtn.disabled = true;
-        submitBtn.classList.remove('enabled');
-      }
-    });
-  </script>
+  <b>ugh is this working yet??</b>
+  <div>TESTER</div>
+  <img src="https://raw.githubusercontent.com/DieselDesigns2022/dieseldesignco/main/coming-soon.jpg" alt="Coming Soon" />
 </body>
 </html>
