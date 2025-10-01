@@ -1,81 +1,60 @@
+// app.js
+
 const express = require('express');
-const bodyParser = require('body-parser');
-const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
-
+const bodyParser = require('body-parser');
 const app = express();
 const PORT = 3000;
 
-// Ensure data folder exists
-const dataDir = path.join(__dirname, 'data');
-if (!fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir);
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname)));
+
+const submissionsDir = path.join(__dirname, 'data');
+if (!fs.existsSync(submissionsDir)) {
+  fs.mkdirSync(submissionsDir);
 }
 
-// Multer setup for file uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const uploadPath = path.join(dataDir, 'uploads');
-    fs.mkdirSync(uploadPath, { recursive: true });
-    cb(null, uploadPath);
-  },
-  filename: (req, file, cb) => {
-    const uniqueName = Date.now() + '-' + file.originalname;
-    cb(null, uniqueName);
-  }
-});
-const upload = multer({ storage });
+// Handle form submissions
+app.post('/submit', (req, res) => {
+  const data = req.body;
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+  const filename = `submission-${timestamp}.json`;
 
-// Middleware
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname))); // Serve static files
-
-// Form submission handler
-app.post('/submit', upload.any(), (req, res) => {
-  const timestamp = new Date().toISOString().replace(/:/g, '-');
-  const savePath = path.join(dataDir, `submission-${timestamp}.json`);
-  const data = {
-    submittedAt: timestamp,
-    fields: req.body,
-    files: req.files?.map(file => ({
-      originalName: file.originalname,
-      storedAs: file.filename,
-      path: file.path
-    }))
-  };
-
-  fs.writeFile(savePath, JSON.stringify(data, null, 2), err => {
+  fs.writeFile(path.join(submissionsDir, filename), JSON.stringify(data, null, 2), (err) => {
     if (err) {
-      console.error('Error saving submission:', err);
-      return res.status(500).send('Submission failed.');
+      console.error('Failed to save submission:', err);
+      return res.status(500).send('Internal Server Error');
     }
-    res.send('<h2>✅ Thank you! Your response has been saved.</h2><p><a href="/index2.html">Back to form</a></p>');
+    console.log(`✔️ Saved submission: ${filename}`);
+    res.send('<h2>Thanks for submitting! ✅</h2><a href="/">Back to home</a>');
   });
 });
 
-// Admin route to list all submission JSON files
+// Serve list of submissions for admin
 app.get('/submissions', (req, res) => {
-  fs.readdir(dataDir, (err, files) => {
+  fs.readdir(submissionsDir, (err, files) => {
     if (err) {
-      console.error('Error reading submissions:', err);
-      return res.status(500).json({ error: 'Could not read submissions.' });
+      return res.status(500).json({ error: 'Failed to read submissions directory' });
     }
 
-    const submissions = files.filter(file =>
-      file.startsWith('submission-') && file.endsWith('.json')
-    );
-    res.json(submissions);
+    const jsonFiles = files.filter(file => file.endsWith('.json'));
+    res.json(jsonFiles);
   });
 });
 
-// Health check
-app.get('/', (req, res) => {
-  res.send('✅ Questionnaire backend is running!');
+// Serve individual JSON file
+app.get('/submissions/:filename', (req, res) => {
+  const filename = req.params.filename;
+  const filePath = path.join(submissionsDir, filename);
+
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).send('File not found');
+  }
+
+  res.sendFile(filePath);
 });
 
-// Start server
 app.listen(PORT, () => {
-  console.log(`🚀 Server running at http://localhost:${PORT}`);
+  console.log(`🚀 Questionnaire backend running on http://localhost:${PORT}`);
 });
