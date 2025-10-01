@@ -1,57 +1,77 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Admin Panel</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin Panel - Form Submissions</title>
   <style>
     body {
       font-family: sans-serif;
       padding: 2rem;
-      background: #f9f9f9;
-      max-width: 900px;
-      margin: auto;
+      background-color: #f4f4f4;
     }
     h1 {
-      text-align: center;
+      margin-bottom: 1rem;
     }
     ul {
-      padding-left: 1.5rem;
+      list-style: none;
+      padding: 0;
     }
-    a {
-      color: #007bff;
+    li {
+      background: #fff;
+      margin-bottom: 0.5rem;
+      padding: 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      border: 1px solid #ddd;
     }
-    .admin-note {
-      font-size: 0.9rem;
-      color: #888;
+    pre {
+      background: #222;
+      color: #0f0;
+      padding: 1rem;
+      border-radius: 6px;
+      margin-top: 1rem;
+      max-height: 400px;
+      overflow: auto;
     }
   </style>
 </head>
 <body>
   <h1>📥 Admin Panel: Form Submissions</h1>
-  <p class="admin-note">Below is a list of saved submission files:</p>
-  <ul id="submissionList">
-    <!-- Populated by fetch -->
-  </ul>
+  <p>Click a file below to view its contents:</p>
+  <ul id="file-list">Loading...</ul>
+  <pre id="file-content" style="display:none;"></pre>
 
   <script>
     fetch('/submissions')
       .then(res => res.json())
-      .then(data => {
-        const list = document.getElementById('submissionList');
-        if (data.length === 0) {
+      .then(files => {
+        const list = document.getElementById('file-list');
+        list.innerHTML = '';
+
+        if (files.length === 0) {
           list.innerHTML = '<li>No submissions yet.</li>';
-        } else {
-          data.forEach(file => {
-            const li = document.createElement('li');
-            li.innerHTML = `<a href="/data/${file}" target="_blank">${file}</a>`;
-            list.appendChild(li);
-          });
+          return;
         }
+
+        files.reverse().forEach(file => {
+          const li = document.createElement('li');
+          li.textContent = file;
+          li.onclick = () => {
+            fetch(`/submissions/${file}`)
+              .then(res => res.json())
+              .then(data => {
+                const pre = document.getElementById('file-content');
+                pre.style.display = 'block';
+                pre.textContent = JSON.stringify(data, null, 2);
+              });
+          };
+          list.appendChild(li);
+        });
       })
       .catch(err => {
-        document.getElementById('submissionList').innerHTML = '<li>Error loading submissions.</li>';
+        document.getElementById('file-list').innerHTML = 'Error loading submissions.';
+        console.error(err);
       });
   </script>
 </body>
