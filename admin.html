@@ -3,77 +3,83 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Admin Panel - Form Submissions</title>
+  <title>Admin Panel</title>
+  <link rel="stylesheet" href="style.css" />
   <style>
     body {
-      font-family: sans-serif;
       padding: 2rem;
-      background-color: #f4f4f4;
-    }
-    h1 {
-      margin-bottom: 1rem;
+      font-family: system-ui, sans-serif;
     }
     ul {
-      list-style: none;
-      padding: 0;
+      list-style-type: none;
+      padding-left: 0;
     }
     li {
-      background: #fff;
-      margin-bottom: 0.5rem;
-      padding: 1rem;
-      border-radius: 6px;
+      margin: 0.5rem 0;
+    }
+    li a {
+      text-decoration: none;
+      color: #0077cc;
       cursor: pointer;
-      border: 1px solid #ddd;
+    }
+    li a:hover {
+      text-decoration: underline;
     }
     pre {
-      background: #222;
-      color: #0f0;
+      background: #f4f4f4;
       padding: 1rem;
-      border-radius: 6px;
-      margin-top: 1rem;
-      max-height: 400px;
-      overflow: auto;
+      border-radius: 5px;
+      margin-top: 2rem;
+      overflow-x: auto;
     }
   </style>
 </head>
 <body>
-  <h1>📥 Admin Panel: Form Submissions</h1>
-  <p>Click a file below to view its contents:</p>
-  <ul id="file-list">Loading...</ul>
-  <pre id="file-content" style="display:none;"></pre>
+  <h1>🛠 Admin Panel</h1>
+  <p>Click a submission file to view its contents:</p>
+  <ul id="fileList"></ul>
+
+  <pre id="fileContent"><em>Select a submission file to view its JSON data here.</em></pre>
 
   <script>
-    fetch('/submissions')
-      .then(res => res.json())
-      .then(files => {
-        const list = document.getElementById('file-list');
-        list.innerHTML = '';
+    async function fetchFileList() {
+      try {
+        const response = await fetch('/submissions');
+        const files = await response.json();
+        const fileList = document.getElementById('fileList');
+        fileList.innerHTML = '';
 
-        if (files.length === 0) {
-          list.innerHTML = '<li>No submissions yet.</li>';
-          return;
-        }
-
-        files.reverse().forEach(file => {
+        files.forEach(file => {
           const li = document.createElement('li');
-          li.textContent = file;
-          li.onclick = () => {
-            fetch(`/submissions/${file}`)
-              .then(res => res.json())
-              .then(data => {
-                const pre = document.getElementById('file-content');
-                pre.style.display = 'block';
-                pre.textContent = JSON.stringify(data, null, 2);
-              });
-          };
-          list.appendChild(li);
+          const link = document.createElement('a');
+          link.textContent = file;
+          link.href = '#';
+          link.addEventListener('click', async (e) => {
+            e.preventDefault();
+            await fetchAndDisplayFile(file);
+          });
+          li.appendChild(link);
+          fileList.appendChild(li);
         });
-      })
-      .catch(err => {
-        document.getElementById('file-list').innerHTML = 'Error loading submissions.';
+      } catch (err) {
+        console.error('Error loading file list:', err);
+      }
+    }
+
+    async function fetchAndDisplayFile(filename) {
+      try {
+        const response = await fetch(`/submissions/${filename}`);
+        if (!response.ok) throw new Error('File not found');
+        const data = await response.json();
+        const content = JSON.stringify(data, null, 2);
+        document.getElementById('fileContent').textContent = content;
+      } catch (err) {
+        document.getElementById('fileContent').textContent = 'Error loading file content.';
         console.error(err);
-      });
+      }
+    }
+
+    fetchFileList();
   </script>
 </body>
 </html>
- 
