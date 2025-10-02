@@ -2,90 +2,109 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>🛠️ Admin Panel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin Panel</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css" />
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #0f1c24;
-      color: #f5f5f5;
       padding: 2rem;
-    }
-    h1 {
-      font-size: 2rem;
-      margin-bottom: 1rem;
+      font-family: system-ui, sans-serif;
     }
     ul {
       list-style-type: none;
       padding-left: 0;
     }
     li {
-      margin-bottom: 0.5rem;
+      margin: 0.5rem 0;
     }
-    a {
-      color: #5bc0de;
+    li a {
       text-decoration: none;
+      color: #0077cc;
+      cursor: pointer;
     }
-    a:hover {
+    li a:hover {
       text-decoration: underline;
     }
     pre {
-      background: #f2f2f2;
-      color: #333;
+      background: #f4f4f4;
       padding: 1rem;
+      border-radius: 5px;
+      margin-top: 2rem;
+      overflow-x: auto;
+    }
+    img.preview {
+      max-width: 400px;
+      margin-top: 1rem;
+      border: 1px solid #ccc;
       border-radius: 6px;
-      white-space: pre-wrap;
-      word-break: break-word;
+      display: block;
     }
   </style>
 </head>
 <body>
-  <h1>🛠️ Admin Panel</h1>
-  <p>Click a submission file to view its contents:</p>
-  <ul id="fileList"></ul>
-  <pre id="fileContent">Select a submission file to view its JSON data here.</pre>
+  <main class="container">
+    <h1>🛠 Admin Panel</h1>
+    <p>Click a submission file to view its contents:</p>
+    <ul id="fileList"></ul>
+
+    <pre id="fileContent"><em>Select a submission file to view its JSON data here.</em></pre>
+    <div id="imagePreview"></div>
+  </main>
 
   <script>
-    async function loadSubmissions() {
+    async function fetchFileList() {
       try {
-        const res = await fetch('/submissions');
-        const files = await res.json();
-
+        const response = await fetch('/submissions');
+        const files = await response.json();
         const fileList = document.getElementById('fileList');
         fileList.innerHTML = '';
 
-        files.forEach(filename => {
+        files.forEach(file => {
           const li = document.createElement('li');
           const link = document.createElement('a');
+          link.textContent = file;
           link.href = '#';
-          link.textContent = filename;
           link.addEventListener('click', async (e) => {
             e.preventDefault();
-            const contentRes = await fetch('/submissions/' + filename);
-            const data = await contentRes.json();
-
-            const contentBox = document.getElementById('fileContent');
-            contentBox.innerHTML = '';
-
-            Object.entries(data).forEach(([key, value]) => {
-              const formatted = 
-                typeof value === 'string' && value.match(/\.(jpg|jpeg|png|gif)$/i)
-                ? `<p><strong>${key}:</strong><br><img src="${value}" style="max-width: 100%; height: auto;" /></p>`
-                : `<p><strong>${key}:</strong> ${value}</p>`;
-
-              contentBox.innerHTML += formatted;
-            });
+            await fetchAndDisplayFile(file);
           });
-
           li.appendChild(link);
           fileList.appendChild(li);
         });
       } catch (err) {
-        document.getElementById('fileContent').textContent = 'Error loading submission list.';
+        console.error('Error loading file list:', err);
       }
     }
 
-    loadSubmissions();
+    async function fetchAndDisplayFile(filename) {
+      try {
+        const response = await fetch(`/submissions/${filename}`);
+        if (!response.ok) throw new Error('File not found');
+        const data = await response.json();
+
+        // Display raw JSON
+        const formatted = JSON.stringify(data, null, 2);
+        document.getElementById('fileContent').textContent = formatted;
+
+        // Show image if present
+        const imageDiv = document.getElementById('imagePreview');
+        imageDiv.innerHTML = '';
+        if (data.image && data.image.startsWith('/uploads/')) {
+          const img = document.createElement('img');
+          img.src = data.image;
+          img.alt = "Uploaded image";
+          img.className = "preview";
+          imageDiv.appendChild(img);
+        }
+
+      } catch (err) {
+        document.getElementById('fileContent').textContent = 'Error loading file content.';
+        document.getElementById('imagePreview').innerHTML = '';
+        console.error(err);
+      }
+    }
+
+    fetchFileList();
   </script>
 </body>
 </html>
