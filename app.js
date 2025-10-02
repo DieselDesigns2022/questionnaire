@@ -1,4 +1,3 @@
-// === Serve individual submission content ===
 const fs = require('fs');
 const path = require('path');
 const express = require('express');
@@ -23,8 +22,8 @@ app.get('/submissions', (req, res) => {
   });
 });
 
-// 🔧 NEW: API to serve individual submission JSON
-app.get('/submissions/:filename', (req, res) => {
+// ✅ UPDATED: Support filenames with dots
+app.get('/submissions/:filename(*)', (req, res) => {
   const filePath = path.join(submissionsDir, req.params.filename);
   fs.readFile(filePath, 'utf-8', (err, content) => {
     if (err) {
