@@ -2,65 +2,90 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Admin Panel</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🛠️ Admin Panel</title>
   <style>
     body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #0f1c24;
+      color: #f5f5f5;
       padding: 2rem;
+    }
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
     }
     ul {
       list-style-type: none;
       padding-left: 0;
     }
     li {
-      margin: 0.5rem 0;
+      margin-bottom: 0.5rem;
     }
-    li a {
+    a {
+      color: #5bc0de;
       text-decoration: none;
-      color: #0077cc;
-      cursor: pointer;
     }
-    li a:hover {
+    a:hover {
       text-decoration: underline;
     }
     pre {
-      background: #f4f4f4;
+      background: #f2f2f2;
+      color: #333;
       padding: 1rem;
-      border-radius: 5px;
-      margin-top: 2rem;
-      overflow-x: auto;
-    }
-    img.preview {
-      max-width: 300px;
-      margin-top: 1rem;
-      display: block;
-      border: 1px solid #ccc;
-      border-radius: 4px;
+      border-radius: 6px;
+      white-space: pre-wrap;
+      word-break: break-word;
     }
   </style>
 </head>
 <body>
-  <main class="container">
-    <h1>🛠 Admin Panel</h1>
-    <p>Click a submission file to view its contents:</p>
-    <ul id="fileList"></ul>
-
-    <pre id="fileContent"><em>Select a submission file to view its JSON data here.</em></pre>
-    <div id="imagePreview"></div>
-  </main>
+  <h1>🛠️ Admin Panel</h1>
+  <p>Click a submission file to view its contents:</p>
+  <ul id="fileList"></ul>
+  <pre id="fileContent">Select a submission file to view its JSON data here.</pre>
 
   <script>
-    async function fetchFileList() {
+    async function loadSubmissions() {
       try {
-        const response = await fetch('/submissions');
-        const files = await response.json();
+        const res = await fetch('/submissions');
+        const files = await res.json();
+
         const fileList = document.getElementById('fileList');
         fileList.innerHTML = '';
 
-        files.forEach(file => {
+        files.forEach(filename => {
           const li = document.createElement('li');
           const link = document.createElement('a');
-          link.textContent = file;
           link.href = '#';
+          link.textContent = filename;
           link.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const contentRes = await fetch('/submissions/' + filename);
+            const data = await contentRes.json();
+
+            const contentBox = document.getElementById('fileContent');
+            contentBox.innerHTML = '';
+
+            Object.entries(data).forEach(([key, value]) => {
+              const formatted = 
+                typeof value === 'string' && value.match(/\.(jpg|jpeg|png|gif)$/i)
+                ? `<p><strong>${key}:</strong><br><img src="${value}" style="max-width: 100%; height: auto;" /></p>`
+                : `<p><strong>${key}:</strong> ${value}</p>`;
+
+              contentBox.innerHTML += formatted;
+            });
+          });
+
+          li.appendChild(link);
+          fileList.appendChild(li);
+        });
+      } catch (err) {
+        document.getElementById('fileContent').textContent = 'Error loading submission list.';
+      }
+    }
+
+    loadSubmissions();
+  </script>
+</body>
+</html>
