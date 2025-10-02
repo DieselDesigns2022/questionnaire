@@ -4,149 +4,24 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Questionnaire 2.0</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 40px;
-      background-color: #f9f9f9;
-    }
-
-    form {
-      max-width: 700px;
-      margin: 0 auto;
-      background: white;
-      padding: 30px;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    }
-
-    label {
-      display: block;
-      margin: 20px 0 5px;
-      font-weight: bold;
-    }
-
-    input[type="text"],
-    textarea,
-    select {
-      width: 100%;
-      padding: 10px;
-      margin-top: 5px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-
-    input[type="checkbox"] {
-      margin-right: 10px;
-    }
-
-    #agreement-box {
-      height: 200px;
-      overflow-y: scroll;
-      background: #f1f1f1;
-      padding: 15px;
-      border: 1px solid #ccc;
-      margin-top: 5px;
-    }
-
-    button {
-      margin-top: 20px;
-      background-color: #333;
-      color: white;
-      border: none;
-      padding: 12px 24px;
-      border-radius: 4px;
-      font-size: 16px;
-      cursor: not-allowed;
-      opacity: 0.5;
-    }
-
-    button.enabled {
-      cursor: pointer;
-      opacity: 1;
-    }
-  </style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css" />
 </head>
 <body>
-  <form id="questionnaire-form" action="/submit" method="POST">
+  <main class="container">
+    <h1>Submit Your Info</h1>
 
-    <label for="name">Your Name:</label>
-    <input type="text" name="name" required />
+    <form action="/submit" method="POST" enctype="multipart/form-data">
+      <label for="name">Name:</label>
+      <input type="text" id="name" name="name" required />
 
-    <label for="email">Email Address:</label>
-    <input type="text" name="email" required />
+      <label for="email">Email:</label>
+      <input type="email" id="email" name="email" required />
 
-    <label for="business">Business Name:</label>
-    <input type="text" name="business" required />
+      <label for="image">Upload an image:</label>
+      <input type="file" id="image" name="image" accept="image/*" />
 
-    <label for="services">What services do you need?</label>
-    <select name="services">
-      <option value="">-- Select one --</option>
-      <option value="web-design">Web Design</option>
-      <option value="branding">Branding</option>
-      <option value="print">Print / Packaging</option>
-      <option value="photo">Photography / Video</option>
-    </select>
-
-    <label for="budget">Estimated Budget:</label>
-    <input type="text" name="budget" />
-
-    <label for="goals">What are your goals for this project?</label>
-    <textarea name="goals" rows="4"></textarea>
-
-    <label for="inspo">Do you have examples of work you like?</label>
-    <textarea name="inspo" rows="3"></textarea>
-
-    <label for="extra">Anything else we should know?</label>
-    <textarea name="extra" rows="3"></textarea>
-
-    <!-- AGREEMENT SECTION -->
-    <label for="agreement">Agreement:</label>
-    <div id="agreement-box">
-      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur ac venenatis elit. Morbi at suscipit sem. Proin sodales nulla a dolor imperdiet, in gravida nulla finibus. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae.</p>
-      <p>Nam quis metus eget nulla vehicula cursus non at nulla. Nulla facilisi. Proin suscipit euismod erat in eleifend. Donec bibendum sem turpis, a scelerisque nulla tincidunt id. Sed nec velit sit amet est lobortis fringilla.</p>
-      <p>Scroll to the bottom to agree...</p>
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur ac venenatis elit. Morbi at suscipit sem. Proin sodales nulla a dolor imperdiet, in gravida nulla finibus. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae.</p>
-      <p>Nam quis metus eget nulla vehicula cursus non at nulla. Nulla facilisi. Proin suscipit euismod erat in eleifend. Donec bibendum sem turpis, a scelerisque nulla tincidunt id. Sed nec velit sit amet est lobortis fringilla.</p>
-      <p>Scroll to the bottom to agree...</p>
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur ac venenatis elit. Morbi at suscipit sem. Proin sodales nulla a dolor imperdiet, in gravida nulla finibus. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae.</p>
-      <p>Nam quis metus eget nulla vehicula cursus non at nulla. Nulla facilisi. Proin suscipit euismod erat in eleifend. Donec bibendum sem turpis, a scelerisque nulla tincidunt id. Sed nec velit sit amet est lobortis fringilla.</p>
-      <p>Scroll to the bottom to agree...</p>
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur ac venenatis elit. Morbi at suscipit sem. Proin sodales nulla a dolor imperdiet, in gravida nulla finibus. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae.</p>
-      <p>Nam quis metus eget nulla vehicula cursus non at nulla. Nulla facilisi. Proin suscipit euismod erat in eleifend. Donec bibendum sem turpis, a scelerisque nulla tincidunt id. Sed nec velit sit amet est lobortis fringilla.</p>
-      <p>Scroll to the bottom to agree...</p>
-      <p style="margin-top: 400px;"><strong>✅ End of agreement.</strong></p>
-    </div>
-
-    <div style="margin-top: 15px;">
-      <input type="checkbox" id="agree" disabled />
-      <label for="agree">I have read and agree to the terms</label>
-    </div>
-
-    <button type="submit" id="submit-btn" disabled>Submit Questionnaire</button>
-  </form>
-
-  <script>
-    const agreementBox = document.getElementById('agreement-box');
-    const agreeCheckbox = document.getElementById('agree');
-    const submitBtn = document.getElementById('submit-btn');
-
-    agreementBox.addEventListener('scroll', () => {
-      const atBottom = agreementBox.scrollTop + agreementBox.clientHeight >= agreementBox.scrollHeight - 5;
-      if (atBottom) {
-        agreeCheckbox.disabled = false;
-      }
-    });
-
-    agreeCheckbox.addEventListener('change', () => {
-      if (agreeCheckbox.checked) {
-        submitBtn.disabled = false;
-        submitBtn.classList.add('enabled');
-      } else {
-        submitBtn.disabled = true;
-        submitBtn.classList.remove('enabled');
-      }
-    });
-  </script>
+      <button type="submit">Submit</button>
+    </form>
+  </main>
 </body>
 </html>
