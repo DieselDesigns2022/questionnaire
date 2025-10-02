@@ -2,109 +2,78 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Admin Panel</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css" />
   <style>
     body {
-      padding: 2rem;
       font-family: system-ui, sans-serif;
+      background: #0f1b22;
+      color: #fff;
+      padding: 2rem;
     }
-    ul {
-      list-style-type: none;
-      padding-left: 0;
-    }
-    li {
-      margin: 0.5rem 0;
-    }
-    li a {
+    a {
+      color: #66ccff;
       text-decoration: none;
-      color: #0077cc;
-      cursor: pointer;
+      display: block;
+      margin-bottom: 0.3rem;
     }
-    li a:hover {
+    a:hover {
       text-decoration: underline;
     }
     pre {
-      background: #f4f4f4;
+      background: #f2f2f2;
+      color: #333;
       padding: 1rem;
-      border-radius: 5px;
-      margin-top: 2rem;
-      overflow-x: auto;
-    }
-    img.preview {
-      max-width: 400px;
-      margin-top: 1rem;
-      border: 1px solid #ccc;
       border-radius: 6px;
+      white-space: pre-wrap;
+      max-width: 700px;
+    }
+    img {
+      max-width: 300px;
+      margin-top: 1rem;
+      border: 2px solid #444;
+      border-radius: 4px;
       display: block;
     }
   </style>
 </head>
 <body>
-  <main class="container">
-    <h1>🛠 Admin Panel</h1>
-    <p>Click a submission file to view its contents:</p>
-    <ul id="fileList"></ul>
-
-    <pre id="fileContent"><em>Select a submission file to view its JSON data here.</em></pre>
-    <div id="imagePreview"></div>
-  </main>
+  <h1>🛠️ Admin Panel</h1>
+  <p>Click a submission file to view its contents:</p>
+  <div id="file-list"></div>
+  <pre id="json-output">Select a submission file to view its JSON data here.</pre>
 
   <script>
-    async function fetchFileList() {
-      try {
-        const response = await fetch('/submissions');
-        const files = await response.json();
-        const fileList = document.getElementById('fileList');
-        fileList.innerHTML = '';
+    fetch('/submissions')
+      .then(res => res.json())
+      .then(files => {
+        const list = document.getElementById('file-list');
+        files.reverse().forEach(file => {
+          const a = document.createElement('a');
+          a.href = "#";
+          a.textContent = file;
+          a.onclick = () => {
+            fetch('/submissions/' + file)
+              .then(res => res.json())
+              .then(data => {
+                const pre = document.getElementById('json-output');
+                pre.textContent = JSON.stringify(data, null, 2);
 
-        files.forEach(file => {
-          const li = document.createElement('li');
-          const link = document.createElement('a');
-          link.textContent = file;
-          link.href = '#';
-          link.addEventListener('click', async (e) => {
-            e.preventDefault();
-            await fetchAndDisplayFile(file);
-          });
-          li.appendChild(link);
-          fileList.appendChild(li);
+                // Remove old image if any
+                const oldImg = document.querySelector('img');
+                if (oldImg) oldImg.remove();
+
+                // Add image if present
+                if (data.image) {
+                  const img = document.createElement('img');
+                  img.src = data.image;
+                  pre.after(img);
+                }
+              });
+          };
+          list.appendChild(a);
         });
-      } catch (err) {
-        console.error('Error loading file list:', err);
-      }
-    }
-
-    async function fetchAndDisplayFile(filename) {
-      try {
-        const response = await fetch(`/submissions/${filename}`);
-        if (!response.ok) throw new Error('File not found');
-        const data = await response.json();
-
-        // Display raw JSON
-        const formatted = JSON.stringify(data, null, 2);
-        document.getElementById('fileContent').textContent = formatted;
-
-        // Show image if present
-        const imageDiv = document.getElementById('imagePreview');
-        imageDiv.innerHTML = '';
-        if (data.image && data.image.startsWith('/uploads/')) {
-          const img = document.createElement('img');
-          img.src = data.image;
-          img.alt = "Uploaded image";
-          img.className = "preview";
-          imageDiv.appendChild(img);
-        }
-
-      } catch (err) {
-        document.getElementById('fileContent').textContent = 'Error loading file content.';
-        document.getElementById('imagePreview').innerHTML = '';
-        console.error(err);
-      }
-    }
-
-    fetchFileList();
+      });
   </script>
 </body>
 </html>
