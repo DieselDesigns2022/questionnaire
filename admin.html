@@ -6,80 +6,104 @@
   <title>Admin Panel</title>
   <style>
     body {
-      font-family: sans-serif;
-      background: #0f1b24;
+      background: #0d1b2a;
       color: #fff;
-      padding: 2rem;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 40px;
     }
     h1 {
       font-size: 2rem;
     }
-    ul {
-      list-style-type: none;
-      padding-left: 0;
-    }
-    li {
-      margin: 0.5rem 0;
-    }
     a {
       color: #4fc3f7;
       text-decoration: none;
+      display: block;
+      margin-bottom: 6px;
+      transition: 0.2s;
+    }
+    a:hover {
+      color: #81d4fa;
     }
     pre {
       background: #f1f1f1;
-      color: #000;
-      padding: 1rem;
-      margin-top: 2rem;
+      color: #111;
+      padding: 20px;
       white-space: pre-wrap;
-      border-radius: 5px;
+      word-wrap: break-word;
+      border-radius: 4px;
+      margin-top: 20px;
     }
-    img {
-      display: block;
-      margin-top: 1rem;
-      max-width: 300px;
+    .file-list {
+      margin-bottom: 20px;
     }
   </style>
 </head>
 <body>
   <h1>🛠️ Admin Panel</h1>
   <p>Click a submission file to view its contents:</p>
-  <ul id="fileList"></ul>
-  <pre id="jsonOutput">Select a submission file to view its JSON data here.</pre>
+  <div class="file-list" id="fileList">Loading...</div>
+  <pre id="jsonOutput"><i>Select a submission file to view its JSON data here.</i></pre>
 
   <script>
-    const fileList = document.getElementById("fileList");
-    const output = document.getElementById("jsonOutput");
+    async function fetchSubmissions() {
+      const fileListEl = document.getElementById('fileList');
+      const outputEl = document.getElementById('jsonOutput');
 
-    fetch("/submissions")
-      .then(res => res.json())
-      .then(files => {
-        files.reverse().forEach(file => {
-          const li = document.createElement("li");
-          const a = document.createElement("a");
-          a.href = "#";
-          a.textContent = file;
-          a.onclick = () => {
-            fetch(`/submissions/${file}`)
-              .then(res => res.json())
-              .then(data => {
-                output.textContent = JSON.stringify(data, null, 2);
+      try {
+        const res = await fetch('/submissions');
+        const files = await res.json();
 
-                // Remove any previous images
-                const existingImg = document.querySelector("img");
-                if (existingImg) existingImg.remove();
+        fileListEl.innerHTML = ''; // Clear loading text
 
-                // Show image if present
-                if (data.image) {
-                  const img = document.createElement("img");
-                  img.src = data.image;
-                  output.after(img);
-                }
-              });
-          };
-          li.appendChild(a);
-          fileList.appendChild(li);
-        });
-      });
+        for (const file of files) {
+          const link = document.createElement('a');
+          link.href = "#";
+          link.textContent = file;
+
+          link.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const res = await fetch('/submissions/' + file);
+            const data = await res.json();
+
+            // Show JSON
+            outputEl.textContent = JSON.stringify(data, null, 2);
+
+            // Remove previous image if any
+            const oldImg = document.getElementById('uploadedImage');
+            if (oldImg) oldImg.remove();
+
+            // If it has an image, show it
+            if (data.image) {
+              const img = document.createElement('img');
+              img.id = 'uploadedImage';
+              img.src = data.image;
+              img.style.maxWidth = '300px';
+              img.style.display = 'block';
+              img.style.marginTop = '20px';
+              outputEl.after(img);
+            }
+          });
+
+          // Fetch each file to check if it contains an image
+          try {
+            const res = await fetch('/submissions/' + file);
+            const json = await res.json();
+            if (json.image) {
+              link.textContent = '📷 ' + file;
+            }
+          } catch (err) {
+            console.warn('Error loading', file, err);
+          }
+
+          fileListEl.appendChild(link);
+        }
+      } catch (err) {
+        fileListEl.textContent = 'Error loading submission list.';
+        console.error(err);
+      }
+    }
+
+    fetchSubmissions();
   </script>
 </body>
 </html>
