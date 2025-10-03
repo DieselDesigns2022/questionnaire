@@ -5,14 +5,58 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Admin Panel – Diesel Designs</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css" />
+  <style>
+    html {
+      scroll-behavior: smooth;
+    }
+
+    nav {
+      position: sticky;
+      top: 0;
+      background: white;
+      padding: 1rem;
+      z-index: 100;
+      border-bottom: 1px solid #ddd;
+    }
+
+    nav ul {
+      display: flex;
+      gap: 1rem;
+      list-style: none;
+      padding-left: 0;
+    }
+
+    nav ul li a {
+      text-decoration: none;
+    }
+  </style>
 </head>
 <body>
-  <main class="container">
-    <h1>Admin Panel</h1>
+  <!-- ✅ NAVIGATION MENU -->
+  <nav class="container">
+    <ul>
+      <li><strong>Admin Panel</strong></li>
+    </ul>
+    <ul>
+      <li><a href="#submissions">Submissions</a></li>
+      <li><a href="#questions">Manage Questions</a></li>
+      <li><a href="#agreement">Agreement Text</a></li>
+    </ul>
+  </nav>
 
-    <!-- 🔧 Manage Questions -->
-    <section>
-      <h2>Questions</h2>
+  <main class="container">
+
+    <!-- ✅ SECTION: Submissions Placeholder -->
+    <section id="submissions">
+      <h2>Submissions (Coming Soon)</h2>
+      <p>This section will allow you to view and download submission files.</p>
+    </section>
+
+    <hr />
+
+    <!-- ✅ SECTION: Manage Questions -->
+    <section id="questions">
+      <h2>Manage Questions</h2>
       <ul id="question-list"></ul>
       <button onclick="addQuestion()">+ Add Question</button>
       <button onclick="saveQuestions()">💾 Save Questions</button>
@@ -20,12 +64,13 @@
 
     <hr />
 
-    <!-- 📄 Edit Agreement Text -->
-    <section>
+    <!-- ✅ SECTION: Edit Agreement Text -->
+    <section id="agreement">
       <h2>Edit Agreement Text</h2>
       <textarea id="agreement-text" rows="10" placeholder="Loading agreement..."></textarea>
       <button onclick="saveAgreement()">💾 Save Agreement</button>
     </section>
+
   </main>
 
   <script>
