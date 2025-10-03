@@ -1,104 +1,105 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Admin Panel</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
-  <style>
-    body {
-      padding: 2rem;
-      background-color: #111;
-      color: #eee;
-    }
-
-    ul {
-      list-style: none;
-      padding-left: 0;
-    }
-
-    ul li {
-      margin-bottom: 0.5rem;
-    }
-
-    .uploaded-image {
-      margin-top: 1rem;
-      border: 1px solid #555;
-      max-width: 100%;
-    }
-
-    textarea {
-      width: 100%;
-      height: 150px;
-    }
-
-    #fileList a {
-      color: #0bf;
-      text-decoration: none;
-    }
-
-    #fileList a:hover {
-      text-decoration: underline;
-    }
-
-    h2, h3 {
-      margin-top: 2rem;
-    }
-
-    .question-box {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 0.5rem;
-    }
-
-    .question-box input {
-      flex-grow: 1;
-      margin-right: 1rem;
-    }
-
-    .remove-btn {
-      background: crimson;
-      color: white;
-      border: none;
-      padding: 0.3rem 0.6rem;
-      cursor: pointer;
-    }
-
-    .uploaded-image {
-      display: block;
-      margin-top: 1rem;
-      border: 1px solid #333;
-    }
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin Panel – Diesel Designs</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css" />
 </head>
 <body>
+  <main class="container">
+    <h1>Admin Panel</h1>
 
-  <h1>🛠️ Admin Panel</h1>
+    <!-- 🔧 Manage Questions -->
+    <section>
+      <h2>Questions</h2>
+      <ul id="question-list"></ul>
+      <button onclick="addQuestion()">+ Add Question</button>
+      <button onclick="saveQuestions()">💾 Save Questions</button>
+    </section>
 
-  <section>
-    <h2>📂 Submissions</h2>
-    <ul id="fileList">
-      <li>Loading submissions...</li>
-    </ul>
-    <pre>{}</pre>
-  </section>
+    <hr />
 
-  <section>
-    <h2>🧩 Manage Questions</h2>
-    <div id="questions-container"></div>
-    <button onclick="addQuestion()">➕ Add Question</button>
-    <button onclick="saveQuestions()">💾 Save Questions</button>
-  </section>
+    <!-- 📄 Edit Agreement Text -->
+    <section>
+      <h2>Edit Agreement Text</h2>
+      <textarea id="agreement-text" rows="10" placeholder="Loading agreement..."></textarea>
+      <button onclick="saveAgreement()">💾 Save Agreement</button>
+    </section>
+  </main>
 
-  <section>
-    <h2>📜 Agreement Text</h2>
-    <textarea id="agreement-text" placeholder="Edit agreement text..."></textarea><br>
-    <button onclick="saveAgreement()">💾 Save Agreement</button>
-  </section>
+  <script>
+    let questions = [];
 
-  <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
-  <script src="admin.js"></script>
+    async function fetchQuestions() {
+      try {
+        const res = await fetch('/admin/questions');
+        questions = await res.json();
+        renderQuestions();
+      } catch (err) {
+        alert('Error loading questions');
+      }
+    }
 
+    function renderQuestions() {
+      const list = document.getElementById('question-list');
+      list.innerHTML = '';
+      questions.forEach((q, i) => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+          <input type="text" value="${q}" onchange="questions[${i}] = this.value" />
+          <button onclick="removeQuestion(${i})">🗑️</button>
+        `;
+        list.appendChild(li);
+      });
+    }
+
+    function addQuestion() {
+      questions.push('');
+      renderQuestions();
+    }
+
+    function removeQuestion(index) {
+      questions.splice(index, 1);
+      renderQuestions();
+    }
+
+    async function saveQuestions() {
+      try {
+        await fetch('/admin/questions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(questions)
+        });
+        alert('Questions saved!');
+      } catch (err) {
+        alert('Error saving questions');
+      }
+    }
+
+    async function fetchAgreement() {
+      const res = await fetch('/admin/agreement');
+      const text = await res.text();
+      document.getElementById('agreement-text').value = text;
+    }
+
+    async function saveAgreement() {
+      const text = document.getElementById('agreement-text').value;
+      try {
+        await fetch('/admin/agreement', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text })
+        });
+        alert('Agreement saved!');
+      } catch (err) {
+        alert('Error saving agreement');
+      }
+    }
+
+    // Init
+    fetchQuestions();
+    fetchAgreement();
+  </script>
 </body>
 </html>
