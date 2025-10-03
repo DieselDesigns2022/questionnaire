@@ -1,112 +1,110 @@
 const express = require('express');
-const path = require('path');
 const fs = require('fs');
+const path = require('path');
 const multer = require('multer');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const { exec } = require('child_process');
+
 const app = express();
-const PORT = process.env.PORT || 3000;
+const port = 3000;
 
-// Middleware
+// Middlewares
+app.use(cors());
+app.use(bodyParser.json());
 app.use(express.static('public'));
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json()); // Enable JSON body parsing
+app.use('/uploads', express.static('uploads'));
 
-// File Upload Setup
+// Multer setup for image uploads
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
+  destination: function (req, file, cb) {
     cb(null, 'uploads/');
   },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, uniqueSuffix + '-' + file.originalname);
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + '-' + file.originalname);
   }
 });
 const upload = multer({ storage });
 
-// Routes
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+// Load Submissions
+app.get('/submissions', (req, res) => {
+  const dirPath = path.join(__dirname, 'data/submissions');
+  fs.readdir(dirPath, (err, files) => {
+    if (err) return res.status(500).json({ error: 'Failed to read submissions' });
+    const submissions = [];
+    files.forEach(file => {
+      const content = fs.readFileSync(path.join(dirPath, file), 'utf8');
+      try {
+        submissions.push(JSON.parse(content));
+      } catch (e) {
+        console.error(`Failed to parse: ${file}`);
+      }
+    });
+    res.json(submissions);
+  });
 });
 
-// Handle form submission
+// Save new submission
 app.post('/submit', upload.single('image'), (req, res) => {
   const submission = req.body;
   if (req.file) {
     submission.image = `/uploads/${req.file.filename}`;
   }
 
-  const timestamp = new Date().toISOString().replace(/:/g, '-');
-  const filePath = path.join(__dirname, 'data', 'submissions', `submission-${timestamp}.json`);
-
+  const filePath = path.join(__dirname, 'data/submissions', `${Date.now()}.json`);
   fs.writeFile(filePath, JSON.stringify(submission, null, 2), err => {
-    if (err) {
-      console.error('Failed to save submission:', err);
-      return res.status(500).send('Internal Server Error');
-    }
-    res.redirect('/thank-you.html');
+    if (err) return res.status(500).json({ error: 'Failed to save submission' });
+    res.json({ success: true });
   });
 });
 
-// Serve uploaded images
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
-// =======================
-// Admin Panel Endpoints
-// =======================
-
-const QUESTIONS_PATH = path.join(__dirname, 'data', 'questions.json');
-const AGREEMENT_PATH = path.join(__dirname, 'data', 'agreement.txt');
-
-// Get questions JSON
-app.get('/admin/questions', (req, res) => {
-  fs.readFile(QUESTIONS_PATH, 'utf-8', (err, data) => {
-    if (err) return res.status(500).json({ error: 'Could not read questions' });
+// Get & Save questions
+app.get('/questions', (req, res) => {
+  const filePath = path.join(__dirname, 'data/questions.json');
+  fs.readFile(filePath, 'utf8', (err, data) => {
+    if (err) return res.status(500).json({ error: 'Failed to read questions' });
     res.json(JSON.parse(data));
   });
 });
 
-// Save questions JSON
-app.post('/admin/questions', (req, res) => {
-  fs.writeFile(QUESTIONS_PATH, JSON.stringify(req.body, null, 2), err => {
+app.post('/questions', (req, res) => {
+  const filePath = path.join(__dirname, 'data/questions.json');
+  fs.writeFile(filePath, JSON.stringify(req.body, null, 2), err => {
     if (err) return res.status(500).json({ error: 'Failed to save questions' });
     res.json({ success: true });
   });
 });
 
-// Get agreement text
-app.get('/admin/agreement', (req, res) => {
-  fs.readFile(AGREEMENT_PATH, 'utf-8', (err, data) => {
-    if (err) return res.status(500).json({ error: 'Could not read agreement.txt' });
+// Agreement routes
+app.get('/agreement', (req, res) => {
+  const filePath = path.join(__dirname, 'data/agreement.txt');
+  fs.readFile(filePath, 'utf8', (err, data) => {
+    if (err) return res.status(500).json({ error: 'Failed to read agreement' });
     res.send(data);
   });
 });
 
-// Save agreement text
-app.post('/admin/agreement', (req, res) => {
-  const { text } = req.body;
-  fs.writeFile(AGREEMENT_PATH, text, err => {
+app.post('/agreement', (req, res) => {
+  const filePath = path.join(__dirname, 'data/agreement.txt');
+  fs.writeFile(filePath, req.body.text, err => {
     if (err) return res.status(500).json({ error: 'Failed to save agreement' });
     res.json({ success: true });
   });
 });
 
-// View submissions in Admin Panel
-app.get('/admin/submissions', (req, res) => {
-  const submissionsDir = path.join(__dirname, 'data', 'submissions');
-  fs.readdir(submissionsDir, (err, files) => {
-    if (err) return res.status(500).json({ error: 'Failed to read submissions directory' });
 
-    const submissions = files
-      .filter(file => file.endsWith('.json'))
-      .map(file => {
-        const content = fs.readFileSync(path.join(submissionsDir, file), 'utf-8');
-        return JSON.parse(content);
-      });
-
-    res.json(submissions);
+// ✅ ✅ ✅ WEBHOOK ROUTE (auto-pull from GitHub)
+app.post('/webhook', (req, res) => {
+  exec('git pull origin main', { cwd: __dirname }, (err, stdout, stderr) => {
+    if (err) {
+      console.error('Webhook git pull failed:', stderr);
+      return res.status(500).send('Git pull failed');
+    }
+    console.log('Webhook git pull success:', stdout);
+    res.status(200).send('Git pulled successfully');
   });
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
+app.listen(port, () => {
+  console.log(`Diesel Designs Questionnaire running on port ${port}`);
 });
