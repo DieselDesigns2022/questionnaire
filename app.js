@@ -9,36 +9,112 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve the main form
+// Serve main form
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public/index.html'));
 });
 
-// Serve the admin panel
+// Serve admin panel
 app.get('/admin.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'public/admin.html'));
 });
 
-// 🧠 Load Questions
-app.get('/admin/questions', (req, res) => {
-  fs.readFile(path.join(__dirname, 'data/questions.json'), 'utf8', (err, data) => {
+// ✅ Serve questions.json directly (used by fetchQuestions)
+app.get('/data/questions.json', (req, res) => {
+  const filePath = path.join(__dirname, 'data/questions.json');
+  fs.readFile(filePath, 'utf8', (err, data) => {
     if (err) {
-      console.error('❌ Failed to read questions.json:', err);
+      console.error('❌ Failed to load questions.json:', err);
       return res.status(500).send('Failed to load questions');
     }
-    res.send(JSON.parse(data));
+    res.setHeader('Content-Type', 'application/json');
+    res.send(data);
   });
 });
 
-// 💾 Save Questions
-app.post('/admin/questions', (req, res) => {
-  const questions = req.body;
-  fs.writeFile(path.join(__dirname, 'data/questions.json'), JSON.stringify(questions, null, 2), err => {
-    if (err) {
-      console.error('❌ Failed to save questions:', err);
-      return res.status(500).send('Failed to save questions');
+// 🛠️ Add a new question
+app.post('/add-question', (req, res) => {
+  const newQuestion = req.body;
+  const filePath = path.join(__dirname, 'data/questions.json');
+
+  fs.readFile(filePath, 'utf8', (err, data) => {
+    let questions = [];
+    if (!err) {
+      try {
+        questions = JSON.parse(data);
+      } catch (e) {
+        console.error('⚠️ Corrupt questions.json, starting fresh');
+      }
     }
-    res.sendStatus(200);
+
+    questions.push(newQuestion);
+
+    fs.writeFile(filePath, JSON.stringify(questions, null, 2), err => {
+      if (err) {
+        console.error('❌ Failed to add question:', err);
+        return res.status(500).send('Failed to save question');
+      }
+      res.sendStatus(200);
+    });
+  });
+});
+
+// 🛠️ Edit question text
+app.put('/edit-question/:index', (req, res) => {
+  const index = parseInt(req.params.index);
+  const { text } = req.body;
+  const filePath = path.join(__dirname, 'data/questions.json');
+
+  fs.readFile(filePath, 'utf8', (err, data) => {
+    if (err) return res.status(500).send('Failed to read questions');
+    let questions = JSON.parse(data);
+    if (!questions[index]) return res.status(404).send('Question not found');
+
+    questions[index].question = text;
+
+    fs.writeFile(filePath, JSON.stringify(questions, null, 2), err => {
+      if (err) return res.status(500).send('Failed to update question');
+      res.sendStatus(200);
+    });
+  });
+});
+
+// 🛠️ Edit question type
+app.put('/edit-type/:index', (req, res) => {
+  const index = parseInt(req.params.index);
+  const { type } = req.body;
+  const filePath = path.join(__dirname, 'data/questions.json');
+
+  fs.readFile(filePath, 'utf8', (err, data) => {
+    if (err) return res.status(500).send('Failed to read questions');
+    let questions = JSON.parse(data);
+    if (!questions[index]) return res.status(404).send('Question not found');
+
+    questions[index].type = type;
+
+    fs.writeFile(filePath, JSON.stringify(questions, null, 2), err => {
+      if (err) return res.status(500).send('Failed to update type');
+      res.sendStatus(200);
+    });
+  });
+});
+
+// 🗑️ Delete a question
+app.delete('/delete-question/:index', (req, res) => {
+  const index = parseInt(req.params.index);
+  const filePath = path.join(__dirname, 'data/questions.json');
+
+  fs.readFile(filePath, 'utf8', (err, data) => {
+    if (err) return res.status(500).send('Failed to read questions');
+    let questions = JSON.parse(data);
+    if (!questions[index]) return res.status(404).send('Question not found');
+
+    questions.splice(index, 1);
+
+    fs.writeFile(filePath, JSON.stringify(questions, null, 2), err => {
+      if (err) return res.status(500).send('Failed to delete question');
+      res.sendStatus(200);
+    });
   });
 });
 
@@ -96,7 +172,7 @@ app.get('/admin/submissions', (req, res) => {
   });
 });
 
-// Start server
+// ✅ Start the server
 app.listen(port, () => {
   console.log(`🚀 Server running at http://localhost:${port}`);
 });
