@@ -1,8 +1,84 @@
 [
   {
-    "id": 1,
-    "label": "What is your name?",
+    "label": "Starter Kit URL (or type N/A)",
     "type": "text",
+    "name": "starter_kit_url",
     "required": true
+  },
+  {
+    "label": "Do you have a Shopify Website already? (Y/N + URL or N/A)",
+    "type": "text",
+    "name": "shopify_site",
+    "required": true
+  },
+  {
+    "label": "Shopify Collaborator Request Code",
+    "type": "text",
+    "name": "collaborator_code"
+  },
+  {
+    "label": "Thin top bar text",
+    "type": "text",
+    "name": "top_bar_text"
+  },
+  {
+    "label": "Scrolling banner text (use - between phrases)",
+    "type": "text",
+    "name": "banner_text"
+  },
+  {
+    "label": "Best way to contact you",
+    "type": "text",
+    "name": "contact_method"
+  },
+  {
+    "label": "Do you acknowledge the digital purchase refund policy?",
+    "type": "checkbox",
+    "name": "refund_policy_ack"
+  },
+  {
+    "label": "Have you uploaded your logo?",
+    "type": "checkbox",
+    "name": "logo_uploaded"
+  },
+  {
+    "label": "Are you a new business or met Nexus?",
+    "type": "text",
+    "name": "business_status"
+  },
+  {
+    "label": "Which platforms do you use? (Facebook / IG / TikTok / Google Shop)",
+    "type": "text",
+    "name": "platform_usage"
+  },
+  {
+    "label": "Install payment methods (Paypal / Sezzle / Afterpay)?",
+    "type": "checkbox",
+    "name": "payment_methods"
+  },
+  {
+    "label": "Acknowledge Shopify business & finance info setup?",
+    "type": "checkbox",
+    "name": "shopify_business_ack"
+  },
+  {
+    "label": "List up to 20 collections",
+    "type": "textarea",
+    "name": "collections"
+  },
+  {
+    "label": "List up to 5 pages (e.g. Contact, About, etc.)",
+    "type": "textarea",
+    "name": "pages"
+  },
+  {
+    "label": "Product list + variants/prices (for templates)",
+    "type": "textarea",
+    "name": "product_list"
+  },
+  {
+    "label": "List any Shopify apps you want installed (up to 5)",
+    "type": "textarea",
+    "name": "apps"
   }
 ]
