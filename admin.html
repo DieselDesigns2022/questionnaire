@@ -9,7 +9,6 @@
     html {
       scroll-behavior: smooth;
     }
-
     nav {
       position: sticky;
       top: 0;
@@ -18,48 +17,70 @@
       z-index: 100;
       border-bottom: 1px solid #ddd;
     }
-
     nav ul {
       display: flex;
       gap: 1rem;
       list-style: none;
       padding-left: 0;
     }
-
     nav ul li a {
       text-decoration: none;
+    }
+    textarea {
+      width: 100%;
+    }
+    input[type="text"] {
+      width: 80%;
+    }
+    .question-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 0.5rem;
     }
   </style>
 </head>
 <body>
+
   <!-- ✅ NAVIGATION MENU -->
   <nav class="container">
     <ul>
       <li><strong>Admin Panel</strong></li>
     </ul>
     <ul>
-      <li><a href="#questions">Manage Questions</a></li>
-      <li><a href="#agreement">Agreement Text</a></li>
+      <li><a href="#questions">Questions</a></li>
+      <li><a href="#agreement">Agreement</a></li>
+      <li><a href="#submissions">Submissions</a></li>
     </ul>
   </nav>
 
   <main class="container">
 
-    <!-- ✅ SECTION: Manage Questions -->
+    <!-- ✅ Manage Questions -->
     <section id="questions">
       <h2>Manage Questions</h2>
-      <ul id="question-list"></ul>
-      <button onclick="addQuestion()">+ Add Question</button>
+      <div id="question-list"></div>
+      <button onclick="addQuestion()">➕ Add Question</button>
       <button onclick="saveQuestions()">💾 Save Questions</button>
     </section>
 
     <hr />
 
-    <!-- ✅ SECTION: Edit Agreement Text -->
+    <!-- ✅ Agreement Text -->
     <section id="agreement">
       <h2>Edit Agreement Text</h2>
       <textarea id="agreement-text" rows="10" placeholder="Loading agreement..."></textarea>
       <button onclick="saveAgreement()">💾 Save Agreement</button>
+    </section>
+
+    <hr />
+
+    <!-- ✅ View Submissions -->
+    <section id="submissions">
+      <h2>Submissions</h2>
+      <ul id="submission-list">
+        <li>Loading submissions...</li>
+      </ul>
     </section>
 
   </main>
@@ -67,26 +88,31 @@
   <script>
     let questions = [];
 
+    // ✅ Load questions from server
     async function fetchQuestions() {
       try {
         const res = await fetch('/admin/questions');
+        if (!res.ok) throw new Error('Failed to fetch questions');
         questions = await res.json();
         renderQuestions();
       } catch (err) {
-        alert('Error loading questions');
+        alert('❌ Error loading questions');
+        console.error(err);
       }
     }
 
+    // ✅ Render questions to DOM
     function renderQuestions() {
       const list = document.getElementById('question-list');
       list.innerHTML = '';
       questions.forEach((q, i) => {
-        const li = document.createElement('li');
-        li.innerHTML = `
+        const div = document.createElement('div');
+        div.className = 'question-row';
+        div.innerHTML = `
           <input type="text" value="${q}" onchange="questions[${i}] = this.value" />
           <button onclick="removeQuestion(${i})">🗑️</button>
         `;
-        list.appendChild(li);
+        list.appendChild(div);
       });
     }
 
@@ -102,40 +128,70 @@
 
     async function saveQuestions() {
       try {
-        await fetch('/admin/questions', {
+        const res = await fetch('/admin/questions', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(questions)
         });
-        alert('Questions saved!');
+        if (!res.ok) throw new Error('Failed to save questions');
+        alert('✅ Questions saved!');
       } catch (err) {
-        alert('Error saving questions');
+        alert('❌ Error saving questions');
+        console.error(err);
       }
     }
 
     async function fetchAgreement() {
-      const res = await fetch('/admin/agreement');
-      const text = await res.text();
-      document.getElementById('agreement-text').value = text;
+      try {
+        const res = await fetch('/admin/agreement');
+        if (!res.ok) throw new Error('Failed to fetch agreement');
+        const text = await res.text();
+        document.getElementById('agreement-text').value = text;
+      } catch (err) {
+        alert('❌ Error loading agreement');
+        console.error(err);
+      }
     }
 
     async function saveAgreement() {
       const text = document.getElementById('agreement-text').value;
       try {
-        await fetch('/admin/agreement', {
+        const res = await fetch('/admin/agreement', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ text })
         });
-        alert('Agreement saved!');
+        if (!res.ok) throw new Error('Failed to save agreement');
+        alert('✅ Agreement saved!');
       } catch (err) {
-        alert('Error saving agreement');
+        alert('❌ Failed to save agreement.');
+        console.error(err);
       }
     }
 
-    // Init
+    async function fetchSubmissions() {
+      try {
+        const res = await fetch('/admin/submissions');
+        if (!res.ok) throw new Error('Failed to fetch submissions');
+        const files = await res.json();
+        const list = document.getElementById('submission-list');
+        list.innerHTML = '';
+        files.forEach(file => {
+          const li = document.createElement('li');
+          li.textContent = file;
+          list.appendChild(li);
+        });
+      } catch (err) {
+        document.getElementById('submission-list').innerHTML = '<li>❌ Error loading submissions</li>';
+        console.error(err);
+      }
+    }
+
+    // ✅ On page load
     fetchQuestions();
     fetchAgreement();
+    fetchSubmissions();
   </script>
+
 </body>
 </html>
