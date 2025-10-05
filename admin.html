@@ -2,179 +2,154 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin Panel</title>
-  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin Panel – Diesel Designs</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css" />
   <style>
-    body { font-family: sans-serif; margin: 2rem; }
-    h1, h2 { margin-bottom: 0.5rem; }
-    input, select, textarea { display: block; margin-bottom: 1rem; width: 100%; max-width: 500px; }
-    ul { list-style-type: none; padding: 0; }
-    li { margin-bottom: 0.5rem; }
-    button { margin-right: 0.5rem; }
-    .question-item { border: 1px solid #ccc; padding: 1rem; margin-bottom: 1rem; }
+    html {
+      scroll-behavior: smooth;
+    }
+
+    nav {
+      position: sticky;
+      top: 0;
+      background: white;
+      padding: 1rem;
+      z-index: 100;
+      border-bottom: 1px solid #ddd;
+    }
+
+    nav ul {
+      display: flex;
+      gap: 1rem;
+      list-style: none;
+      padding-left: 0;
+    }
+
+    nav ul li a {
+      text-decoration: none;
+    }
+
+    select {
+      min-width: 120px;
+    }
   </style>
 </head>
 <body>
-  <h1>Admin Panel</h1>
+  <nav class="container">
+    <ul>
+      <li><strong>Admin Panel</strong></li>
+    </ul>
+    <ul>
+      <li><a href="#questions">Questions</a></li>
+      <li><a href="#agreement">Agreement</a></li>
+    </ul>
+  </nav>
 
-  <section>
-    <h2>Agreement Text</h2>
-    <textarea id="agreement" rows="6" placeholder="Enter agreement text..."></textarea>
-    <button onclick="saveAgreement()">💾 Save Agreement</button>
-  </section>
+  <main class="container">
+    <section id="questions">
+      <h2>Manage Questions</h2>
+      <ul id="question-list"></ul>
+      <button onclick="addQuestion()">+ Add Question</button>
+      <button onclick="saveQuestions()">💾 Save Questions</button>
+    </section>
 
-  <hr />
+    <hr />
 
-  <section>
-    <h2>Questions</h2>
-    <div id="question-list"></div>
-
-    <h3>Add New Question</h3>
-    <input type="text" id="new-question" placeholder="Enter question text" />
-    <select id="new-type">
-      <option value="text">Text</option>
-      <option value="textarea">Textarea</option>
-      <option value="select">Dropdown</option>
-      <option value="checkbox">Checkbox</option>
-      <option value="file">File Upload</option>
-    </select>
-    <button onclick="addQuestion()">➕ Add Question</button>
-  </section>
-
-  <hr />
-
-  <section>
-    <h2>Submissions</h2>
-    <ul id="submission-list"></ul>
-  </section>
+    <section id="agreement">
+      <h2>Agreement Text</h2>
+      <textarea id="agreement-text" rows="10" placeholder="Loading agreement..."></textarea>
+      <button onclick="saveAgreement()">💾 Save Agreement</button>
+    </section>
+  </main>
 
   <script>
+    let questions = [];
+
     async function fetchQuestions() {
       try {
-        const res = await fetch('/data/questions.json');
-        const data = await res.json();
-        const container = document.getElementById('question-list');
-        container.innerHTML = '';
-
-        data.forEach((q, index) => {
-          const div = document.createElement('div');
-          div.className = 'question-item';
-          div.innerHTML = `
-            <strong>Q${index + 1}:</strong> <input type="text" value="${q.question}" data-index="${index}" onchange="editQuestion(this)" />
-            <select data-index="${index}" onchange="editType(this)">
-              <option value="text" ${q.type === 'text' ? 'selected' : ''}>Text</option>
-              <option value="textarea" ${q.type === 'textarea' ? 'selected' : ''}>Textarea</option>
-              <option value="select" ${q.type === 'select' ? 'selected' : ''}>Dropdown</option>
-              <option value="checkbox" ${q.type === 'checkbox' ? 'selected' : ''}>Checkbox</option>
-              <option value="file" ${q.type === 'file' ? 'selected' : ''}>File Upload</option>
-            </select>
-            <button onclick="deleteQuestion(${index})">🗑️ Delete</button>
-          `;
-          container.appendChild(div);
-        });
+        const res = await fetch('/admin/questions');
+        questions = await res.json();
+        renderQuestions();
       } catch (err) {
-        alert("❌ Error loading questions");
+        alert('❌ Error loading questions');
+      }
+    }
+
+    function renderQuestions() {
+      const list = document.getElementById('question-list');
+      list.innerHTML = '';
+      questions.forEach((q, i) => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+          <input type="text" placeholder="Label" value="${q.label || ''}" onchange="questions[${i}].label = this.value" />
+          <input type="text" placeholder="Name" value="${q.name || ''}" onchange="questions[${i}].name = this.value" />
+          <select onchange="questions[${i}].type = this.value">
+            <option value="text" ${q.type === 'text' ? 'selected' : ''}>Text</option>
+            <option value="textarea" ${q.type === 'textarea' ? 'selected' : ''}>Textarea</option>
+            <option value="checkbox" ${q.type === 'checkbox' ? 'selected' : ''}>Checkbox</option>
+            <option value="file" ${q.type === 'file' ? 'selected' : ''}>Image Upload</option>
+          </select>
+          <label>
+            Required?
+            <input type="checkbox" ${q.required ? 'checked' : ''} onchange="questions[${i}].required = this.checked" />
+          </label>
+          <button onclick="removeQuestion(${i})">🗑️</button>
+        `;
+        list.appendChild(li);
+      });
+    }
+
+    function addQuestion() {
+      questions.push({ label: '', type: 'text', name: '', required: false });
+      renderQuestions();
+    }
+
+    function removeQuestion(index) {
+      questions.splice(index, 1);
+      renderQuestions();
+    }
+
+    async function saveQuestions() {
+      try {
+        await fetch('/admin/questions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(questions)
+        });
+        alert('✅ Questions saved!');
+      } catch (err) {
+        alert('❌ Failed to save questions');
       }
     }
 
     async function fetchAgreement() {
       try {
-        const res = await fetch('/data/agreement.txt');
+        const res = await fetch('/admin/agreement');
         const text = await res.text();
-        document.getElementById('agreement').value = text;
-      } catch (err) {
-        alert("❌ Error loading agreement");
+        document.getElementById('agreement-text').value = text;
+      } catch {
+        alert('❌ Error loading agreement');
       }
     }
 
     async function saveAgreement() {
-      const text = document.getElementById('agreement').value;
-      const res = await fetch('/save-agreement', {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain' },
-        body: text
-      });
-      if (res.ok) {
-        alert('✅ Agreement saved');
-      } else {
-        alert('❌ Failed to save agreement.');
-      }
-    }
-
-    async function addQuestion() {
-      const text = document.getElementById('new-question').value;
-      const type = document.getElementById('new-type').value;
-      if (!text) return alert("Enter a question!");
-      const res = await fetch('/add-question', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: text, type })
-      });
-      if (res.ok) {
-        document.getElementById('new-question').value = '';
-        fetchQuestions();
-        alert('✅ Question added');
-      } else {
-        alert('❌ Failed to add question');
-      }
-    }
-
-    async function deleteQuestion(index) {
-      const res = await fetch(`/delete-question/${index}`, { method: 'DELETE' });
-      if (res.ok) {
-        fetchQuestions();
-        alert('🗑️ Question deleted');
-      } else {
-        alert('❌ Failed to delete question');
-      }
-    }
-
-    async function editQuestion(input) {
-      const index = input.getAttribute('data-index');
-      const res = await fetch(`/edit-question/${index}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: input.value })
-      });
-      if (!res.ok) {
-        alert('❌ Failed to edit question');
-      }
-    }
-
-    async function editType(select) {
-      const index = select.getAttribute('data-index');
-      const res = await fetch(`/edit-type/${index}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: select.value })
-      });
-      if (!res.ok) {
-        alert('❌ Failed to update type');
-      }
-    }
-
-    async function fetchSubmissions() {
+      const text = document.getElementById('agreement-text').value;
       try {
-        const res = await fetch('/submissions');
-        const data = await res.json();
-        const list = document.getElementById('submission-list');
-        list.innerHTML = '';
-        data.forEach((submission, i) => {
-          const li = document.createElement('li');
-          li.innerText = `Submission ${i + 1}: ${JSON.stringify(submission)}`;
-          list.appendChild(li);
+        await fetch('/admin/agreement', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text })
         });
-      } catch (err) {
-        const list = document.getElementById('submission-list');
-        list.innerHTML = '<li>❌ Error loading submissions</li>';
+        alert('✅ Agreement saved!');
+      } catch {
+        alert('❌ Failed to save agreement');
       }
     }
 
     // Init
     fetchQuestions();
     fetchAgreement();
-    fetchSubmissions();
   </script>
 </body>
 </html>
