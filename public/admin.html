@@ -5,63 +5,37 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Admin Panel – Diesel Designs</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css" />
-  <style>
-    html {
-      scroll-behavior: smooth;
-    }
-
-    nav {
-      position: sticky;
-      top: 0;
-      background: white;
-      padding: 1rem;
-      z-index: 100;
-      border-bottom: 1px solid #ddd;
-    }
-
-    nav ul {
-      display: flex;
-      gap: 1rem;
-      list-style: none;
-      padding-left: 0;
-    }
-
-    nav ul li a {
-      text-decoration: none;
-    }
-  </style>
+  <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
-  <!-- ✅ NAVIGATION MENU -->
-  <nav class="container">
+  <nav class="container-fluid">
+    <ul><li><strong>Diesel Designs</strong></li></ul>
     <ul>
-      <li><strong>Admin Panel</strong></li>
-    </ul>
-    <ul>
-      <li><a href="#questions">Manage Questions</a></li>
-      <li><a href="#agreement">Agreement Text</a></li>
+      <li><a href="/">Home</a></li>
+      <li><a href="#" role="button">Admin</a></li>
     </ul>
   </nav>
 
   <main class="container">
+    <div class="grid">
+      <section>
+        <hgroup>
+          <h2>Admin Panel</h2>
+          <h3>Edit Form Questions & Agreement</h3>
+        </hgroup>
 
-    <!-- ✅ SECTION: Manage Questions -->
-    <section id="questions">
-      <h2>Manage Questions</h2>
-      <ul id="question-list"></ul>
-      <button onclick="addQuestion()">+ Add Question</button>
-      <button onclick="saveQuestions()">💾 Save Questions</button>
-    </section>
+        <h3>Questions</h3>
+        <ul id="question-list"></ul>
+        <button onclick="addQuestion()">+ Add Question</button>
+        <button onclick="saveQuestions()">💾 Save Questions</button>
 
-    <hr />
+        <hr />
 
-    <!-- ✅ SECTION: Edit Agreement Text -->
-    <section id="agreement">
-      <h2>Edit Agreement Text</h2>
-      <textarea id="agreement-text" rows="10" placeholder="Loading agreement..."></textarea>
-      <button onclick="saveAgreement()">💾 Save Agreement</button>
-    </section>
-
+        <h3>Agreement Text</h3>
+        <textarea id="agreement-text" rows="10" placeholder="Loading agreement..."></textarea>
+        <button onclick="saveAgreement()">💾 Save Agreement</button>
+      </section>
+    </div>
   </main>
 
   <script>
@@ -73,17 +47,29 @@
         questions = await res.json();
         renderQuestions();
       } catch (err) {
-        alert('Error loading questions');
+        alert('❌ Error loading questions');
       }
     }
 
     function renderQuestions() {
       const list = document.getElementById('question-list');
       list.innerHTML = '';
+
       questions.forEach((q, i) => {
         const li = document.createElement('li');
         li.innerHTML = `
-          <input type="text" value="${q}" onchange="questions[${i}] = this.value" />
+          <input type="text" placeholder="Label" value="${q.label || ''}" onchange="questions[${i}].label = this.value" />
+          <input type="text" placeholder="Name" value="${q.name || ''}" onchange="questions[${i}].name = this.value" />
+          <select onchange="questions[${i}].type = this.value">
+            <option value="text" ${q.type === 'text' ? 'selected' : ''}>Text</option>
+            <option value="textarea" ${q.type === 'textarea' ? 'selected' : ''}>Textarea</option>
+            <option value="checkbox" ${q.type === 'checkbox' ? 'selected' : ''}>Checkbox</option>
+            <option value="file" ${q.type === 'file' ? 'selected' : ''}>File Upload</option>
+          </select>
+          <label>
+            Required?
+            <input type="checkbox" ${q.required ? 'checked' : ''} onchange="questions[${i}].required = this.checked" />
+          </label>
           <button onclick="removeQuestion(${i})">🗑️</button>
         `;
         list.appendChild(li);
@@ -91,7 +77,7 @@
     }
 
     function addQuestion() {
-      questions.push('');
+      questions.push({ label: '', name: '', type: 'text', required: false });
       renderQuestions();
     }
 
@@ -107,16 +93,20 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(questions)
         });
-        alert('Questions saved!');
+        alert('✅ Questions saved!');
       } catch (err) {
-        alert('Error saving questions');
+        alert('❌ Failed to save questions');
       }
     }
 
     async function fetchAgreement() {
-      const res = await fetch('/admin/agreement');
-      const text = await res.text();
-      document.getElementById('agreement-text').value = text;
+      try {
+        const res = await fetch('/admin/agreement');
+        const text = await res.text();
+        document.getElementById('agreement-text').value = text;
+      } catch {
+        alert('❌ Error loading agreement');
+      }
     }
 
     async function saveAgreement() {
@@ -127,9 +117,9 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ text })
         });
-        alert('Agreement saved!');
-      } catch (err) {
-        alert('Error saving agreement');
+        alert('✅ Agreement saved!');
+      } catch {
+        alert('❌ Failed to save agreement');
       }
     }
 
@@ -139,4 +129,3 @@
   </script>
 </body>
 </html>
-
