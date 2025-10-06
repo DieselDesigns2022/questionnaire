@@ -9,22 +9,22 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve main form
+// Serve public/index.html
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public/index.html'));
 });
 
-// Serve admin panel
+// Serve admin.html manually if needed
 app.get('/admin.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'public/admin.html'));
 });
 
-// ✅ Serve questions.json directly (used by fetchQuestions)
-app.get('/data/questions.json', (req, res) => {
+// ✅ NEW: GET /admin/questions – used by admin.html
+app.get('/admin/questions', (req, res) => {
   const filePath = path.join(__dirname, 'data/questions.json');
   fs.readFile(filePath, 'utf8', (err, data) => {
     if (err) {
-      console.error('❌ Failed to load questions.json:', err);
+      console.error('❌ Failed to read questions.json:', err);
       return res.status(500).send('Failed to load questions');
     }
     res.setHeader('Content-Type', 'application/json');
@@ -32,93 +32,21 @@ app.get('/data/questions.json', (req, res) => {
   });
 });
 
-// 🛠️ Add a new question
-app.post('/add-question', (req, res) => {
-  const newQuestion = req.body;
+// ✅ NEW: POST /admin/questions – saves updated questions
+app.post('/admin/questions', (req, res) => {
+  const questions = req.body;
   const filePath = path.join(__dirname, 'data/questions.json');
 
-  fs.readFile(filePath, 'utf8', (err, data) => {
-    let questions = [];
-    if (!err) {
-      try {
-        questions = JSON.parse(data);
-      } catch (e) {
-        console.error('⚠️ Corrupt questions.json, starting fresh');
-      }
+  fs.writeFile(filePath, JSON.stringify(questions, null, 2), err => {
+    if (err) {
+      console.error('❌ Failed to save questions:', err);
+      return res.status(500).send('Failed to save questions');
     }
-
-    questions.push(newQuestion);
-
-    fs.writeFile(filePath, JSON.stringify(questions, null, 2), err => {
-      if (err) {
-        console.error('❌ Failed to add question:', err);
-        return res.status(500).send('Failed to save question');
-      }
-      res.sendStatus(200);
-    });
+    res.sendStatus(200);
   });
 });
 
-// 🛠️ Edit question text
-app.put('/edit-question/:index', (req, res) => {
-  const index = parseInt(req.params.index);
-  const { text } = req.body;
-  const filePath = path.join(__dirname, 'data/questions.json');
-
-  fs.readFile(filePath, 'utf8', (err, data) => {
-    if (err) return res.status(500).send('Failed to read questions');
-    let questions = JSON.parse(data);
-    if (!questions[index]) return res.status(404).send('Question not found');
-
-    questions[index].question = text;
-
-    fs.writeFile(filePath, JSON.stringify(questions, null, 2), err => {
-      if (err) return res.status(500).send('Failed to update question');
-      res.sendStatus(200);
-    });
-  });
-});
-
-// 🛠️ Edit question type
-app.put('/edit-type/:index', (req, res) => {
-  const index = parseInt(req.params.index);
-  const { type } = req.body;
-  const filePath = path.join(__dirname, 'data/questions.json');
-
-  fs.readFile(filePath, 'utf8', (err, data) => {
-    if (err) return res.status(500).send('Failed to read questions');
-    let questions = JSON.parse(data);
-    if (!questions[index]) return res.status(404).send('Question not found');
-
-    questions[index].type = type;
-
-    fs.writeFile(filePath, JSON.stringify(questions, null, 2), err => {
-      if (err) return res.status(500).send('Failed to update type');
-      res.sendStatus(200);
-    });
-  });
-});
-
-// 🗑️ Delete a question
-app.delete('/delete-question/:index', (req, res) => {
-  const index = parseInt(req.params.index);
-  const filePath = path.join(__dirname, 'data/questions.json');
-
-  fs.readFile(filePath, 'utf8', (err, data) => {
-    if (err) return res.status(500).send('Failed to read questions');
-    let questions = JSON.parse(data);
-    if (!questions[index]) return res.status(404).send('Question not found');
-
-    questions.splice(index, 1);
-
-    fs.writeFile(filePath, JSON.stringify(questions, null, 2), err => {
-      if (err) return res.status(500).send('Failed to delete question');
-      res.sendStatus(200);
-    });
-  });
-});
-
-// 📄 Load Agreement Text
+// ✅ Load agreement.txt
 app.get('/admin/agreement', (req, res) => {
   fs.readFile(path.join(__dirname, 'data/agreement.txt'), 'utf8', (err, text) => {
     if (err) {
@@ -129,7 +57,7 @@ app.get('/admin/agreement', (req, res) => {
   });
 });
 
-// 💾 Save Agreement Text
+// ✅ Save agreement.txt
 app.post('/admin/agreement', (req, res) => {
   const { text } = req.body;
   fs.writeFile(path.join(__dirname, 'data/agreement.txt'), text, err => {
@@ -141,7 +69,7 @@ app.post('/admin/agreement', (req, res) => {
   });
 });
 
-// 📦 Get All Submissions
+// ✅ Get all submissions
 app.get('/admin/submissions', (req, res) => {
   const submissionsDir = path.join(__dirname, 'data/submissions');
   fs.readdir(submissionsDir, (err, files) => {
@@ -160,7 +88,7 @@ app.get('/admin/submissions', (req, res) => {
       fs.readFile(path.join(submissionsDir, file), 'utf8', (err, data) => {
         if (!err) {
           try {
-            submissions.push(JSON.parse(data));
+            submissions.push({ file, content: JSON.parse(data) });
           } catch (e) {
             console.warn('⚠️ Invalid JSON in:', file);
           }
