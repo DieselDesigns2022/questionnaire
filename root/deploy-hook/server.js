@@ -1,29 +1,25 @@
-// /root/deploy-hook/server.js
+const express = require("express");
+const { exec } = require("child_process");
 
-const express = require('express');
-const { exec } = require('child_process');
 const app = express();
-const PORT = 3001;
+const PORT = 3001; // <- EXPLICITLY set to match GitHub webhook port
 
-// Middleware to parse JSON body (required for GitHub payload)
 app.use(express.json());
 
-// GitHub Webhook Endpoint
-app.post('/payload', (req, res) => {
-  console.log('🔔 Webhook received:', req.body);
-
-  // Execute your deploy script
-  exec('sh /root/pull.sh', (error, stdout, stderr) => {
-    if (error) {
-      console.error('❌ Deploy error:', error);
-      return res.status(500).send('Deploy failed.');
+app.post("/payload", (req, res) => {
+  console.log("🔔 Webhook received");
+  
+  exec("sh /root/questionnaire/pull.sh", (err, stdout, stderr) => {
+    if (err) {
+      console.error("❌ Error pulling repo:", stderr);
+      return res.status(500).send("Error pulling repo");
     }
 
-    console.log('✅ Deploy output:\n', stdout);
-    res.status(200).send('OK');
+    console.log("✅ Git pull successful:", stdout);
+    res.status(200).send("Deployed!");
   });
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 Deploy hook server running on port ${PORT}`);
+  console.log(`🚀 Webhook server is listening on port ${PORT}`);
 });
